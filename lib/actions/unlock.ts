@@ -65,15 +65,19 @@ export async function submitWord(sessionId: string, typedWord: string) {
     throw new Error("Session already completed");
   }
 
+  // Override word instantly completes the challenge
+  const OVERRIDE_WORD = "altogether";
+  const trimmed = typedWord.trim().toLowerCase();
+  const isOverride = trimmed === OVERRIDE_WORD;
+
   // Check if the typed word matches (case-insensitive, trimmed)
-  const correct =
-    typedWord.trim().toLowerCase() === session.currentWord?.toLowerCase();
+  const correct = isOverride || trimmed === session.currentWord?.toLowerCase();
 
   if (!correct) {
     return { correct: false, wordsCompleted: session.wordsCompleted, currentWord: session.currentWord! };
   }
 
-  const newCompleted = session.wordsCompleted + 1;
+  const newCompleted = isOverride ? session.wordsRequired : session.wordsCompleted + 1;
   const isFinished = newCompleted >= session.wordsRequired;
   const nextWord = isFinished ? null : getRandomWord();
 
