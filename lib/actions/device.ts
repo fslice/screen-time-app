@@ -1,16 +1,32 @@
 "use server";
 
-import { auth } from "@clerk/nextjs/server";
+import { auth, currentUser } from "@clerk/nextjs/server";
 import { db } from "@/lib/prisma";
-import { encrypt, decrypt } from "@/lib/encryption";
+import { encrypt } from "@/lib/encryption";
 import { generatePasscode, passcodesToMathProblems } from "@/lib/passcode";
 import { assignIcloudAccount } from "@/lib/icloud-accounts";
 import { revalidatePath } from "next/cache";
 
+async function ensureUser() {
+  const { userId } = await auth();
+  if (!userId) throw new Error("Unauthorized");
+
+  const existing = await db.user.findUnique({ where: { id: userId } });
+  if (!existing) {
+    const clerkUser = await currentUser();
+    await db.user.create({
+      data: {
+        id: userId,
+        email: clerkUser?.emailAddresses[0]?.emailAddress ?? "",
+      },
+    });
+  }
+  return userId;
+}
+
 export async function createDevice(name: string, wordsRequired: number) {
   try {
-    const { userId } = await auth();
-    if (!userId) return { error: "Unauthorized" };
+    const userId = await ensureUser();
 
     const passcode = generatePasscode();
     const mathProblems = passcodesToMathProblems(passcode);
@@ -44,8 +60,7 @@ export async function createDevice(name: string, wordsRequired: number) {
 }
 
 export async function getDevices() {
-  const { userId } = await auth();
-  if (!userId) throw new Error("Unauthorized");
+  const userId = await ensureUser();
 
   return db.device.findMany({
     where: { userId },
@@ -61,8 +76,7 @@ export async function getDevices() {
 }
 
 export async function deleteDevice(deviceId: string) {
-  const { userId } = await auth();
-  if (!userId) throw new Error("Unauthorized");
+  const userId = await ensureUser();
 
   await db.device.deleteMany({
     where: { id: deviceId, userId },
