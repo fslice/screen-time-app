@@ -4,7 +4,13 @@ import { DeviceList } from "@/components/device-list";
 
 export default async function DashboardPage() {
   const user = await currentUser();
-  const devices = await getDevices();
+
+  let devices: Awaited<ReturnType<typeof getDevices>> = [];
+  try {
+    devices = await getDevices();
+  } catch (e) {
+    console.error("Failed to fetch devices:", e);
+  }
 
   return (
     <div className="space-y-12">
