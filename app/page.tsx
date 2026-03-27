@@ -1,7 +1,10 @@
+"use client";
+
 import Link from "next/link";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Check, X, Minus, ArrowRight, Lock } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 // ─── Nav ────────────────────────────────────────────────────────────────────
 
@@ -26,13 +29,12 @@ function Nav() {
           ))}
         </nav>
 
-        <Button
-          size="sm"
-          className="text-xs tracking-widest uppercase rounded-none px-5"
-          asChild
+        <Link
+          href="/sign-up"
+          className={cn(buttonVariants({ size: "sm" }), "text-xs tracking-widest uppercase rounded-none px-5")}
         >
-          <Link href="/sign-up">Get Started</Link>
-        </Button>
+          Get Started
+        </Link>
       </div>
     </header>
   );
@@ -72,9 +74,12 @@ function Hero() {
             </p>
 
             <div className="mt-10 flex flex-wrap items-center gap-5 animate-in delay-3">
-              <Button className="rounded-none px-7 py-5 text-xs tracking-[0.2em] uppercase font-semibold" asChild>
-                <Link href="/sign-up">Start Free Trial</Link>
-              </Button>
+              <Link
+                href="/sign-up"
+                className={cn(buttonVariants(), "rounded-none px-7 py-5 text-xs tracking-[0.2em] uppercase font-semibold")}
+              >
+                Start Free Trial
+              </Link>
               <a
                 href="#how-it-works"
                 className="flex items-center gap-2 text-xs tracking-widest uppercase text-muted-foreground hover:text-foreground transition-colors"
@@ -403,15 +408,16 @@ function Pricing() {
                 ))}
               </ul>
 
-              <Button
-                className={`w-full rounded-none text-xs tracking-[0.2em] uppercase py-5 ${
-                  plan.highlighted ? "" : "bg-transparent border border-border text-foreground hover:bg-foreground hover:text-background"
-                }`}
-                variant={plan.highlighted ? "default" : "outline"}
-                asChild
+              <Link
+                href="/sign-up"
+                className={cn(
+                  buttonVariants({ variant: plan.highlighted ? "default" : "outline" }),
+                  "w-full rounded-none text-xs tracking-[0.2em] uppercase py-5",
+                  !plan.highlighted && "bg-transparent border border-border text-foreground hover:bg-foreground hover:text-background"
+                )}
               >
-                <Link href="/sign-up">{plan.cta}</Link>
-              </Button>
+                {plan.cta}
+              </Link>
             </div>
           ))}
         </div>
@@ -519,9 +525,12 @@ function CtaBanner() {
             </h2>
           </div>
           <div className="flex flex-col gap-4 md:items-end">
-            <Button className="rounded-none px-10 py-6 text-xs tracking-[0.2em] uppercase font-semibold" asChild>
-              <Link href="/sign-up">Start Free Trial</Link>
-            </Button>
+            <Link
+              href="/sign-up"
+              className={cn(buttonVariants(), "rounded-none px-10 py-6 text-xs tracking-[0.2em] uppercase font-semibold")}
+            >
+              Start Free Trial
+            </Link>
             <p className="text-xs text-muted-foreground tracking-wide">
               No credit card required to try.
             </p>
