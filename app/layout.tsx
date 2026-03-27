@@ -1,17 +1,18 @@
 import type { Metadata } from "next";
-import { Bebas_Neue, IBM_Plex_Mono } from "next/font/google";
+import { Instrument_Serif, DM_Sans } from "next/font/google";
 import { ClerkProvider } from "@clerk/nextjs";
 import "./globals.css";
 
-const bebasNeue = Bebas_Neue({
+const instrumentSerif = Instrument_Serif({
   weight: "400",
-  variable: "--font-bebas",
+  variable: "--font-serif",
   subsets: ["latin"],
+  style: ["normal", "italic"],
 });
 
-const ibmPlexMono = IBM_Plex_Mono({
+const dmSans = DM_Sans({
   weight: ["400", "500", "600", "700"],
-  variable: "--font-ibm",
+  variable: "--font-sans-display",
   subsets: ["latin"],
 });
 
@@ -34,7 +35,7 @@ export default function RootLayout({
     >
       <html
         lang="en"
-        className={`${bebasNeue.variable} ${ibmPlexMono.variable} dark h-full`}
+        className={`${instrumentSerif.variable} ${dmSans.variable} h-full`}
       >
         <body className="min-h-full flex flex-col bg-background text-foreground antialiased">
           {children}
