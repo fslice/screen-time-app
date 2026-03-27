@@ -1,0 +1,89 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../lib/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ── User ─────────────────────────────────────────────────────────────────────
+// Mirrored from Clerk via webhook. Clerk user ID is the primary key.
+
+model User {
+  id        String   @id // Clerk user ID (e.g. "user_2abc...")
+  email     String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations — populated in later stages
+  screenTimePassword ScreenTimePassword?
+  willpowerSessions  WillpowerSession[]
+  subscription       Subscription?
+}
+
+// ── ScreenTimePassword ───────────────────────────────────────────────────────
+// The obfuscated password, encrypted with AES-256-GCM server-side.
+// Never exposed to the client except after the willpower wall is passed.
+
+model ScreenTimePassword {
+  id                String   @id @default(cuid())
+  userId            String   @unique
+  encryptedPassword String   // AES-256-GCM ciphertext (hex)
+  iv                String   // Initialization vector (hex)
+  authTag           String   // GCM auth tag (hex)
+  isVerified        Boolean  @default(false) // true once user confirms it worked on-device
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+// ── WillpowerSession ─────────────────────────────────────────────────────────
+// Tracks progress through the word-typing challenge.
+// Persisted so a page refresh doesn't reset progress.
+
+model WillpowerSession {
+  id                String    @id @default(cuid())
+  userId            String
+  wordsRequired     Int       @default(600)
+  wordsCompleted    Int       @default(0)
+  completedAt       DateTime? // set when wordsCompleted >= wordsRequired
+  passwordRevealedAt DateTime? // set when password is fetched post-completion
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+// ── Subscription ─────────────────────────────────────────────────────────────
+// Synced from Stripe via webhook. Handles both recurring and lifetime plans.
+
+model Subscription {
+  id                     String    @id @default(cuid())
+  userId                 String    @unique
+  stripeCustomerId       String    @unique
+  stripeSubscriptionId   String?   @unique // null for lifetime (one-time payment)
+  stripePriceId          String?
+  status                 SubStatus @default(trialing)
+  planType               PlanType?
+  currentPeriodEnd       DateTime?
+  createdAt              DateTime  @default(now())
+  updatedAt              DateTime  @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+enum SubStatus {
+  trialing
+  active
+  past_due
+  canceled
+  lifetime
+}
+
+enum PlanType {
+  monthly
+  annual
+  lifetime
+}
