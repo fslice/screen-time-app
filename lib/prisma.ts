@@ -11,7 +11,7 @@ function createPrismaClient() {
   }
   const adapter = new PrismaPg({
     connectionString,
-    ssl: { rejectUnauthorized: false },
+    ssl: process.env.NODE_ENV === "production" ? { rejectUnauthorized: false } : false,
   });
   return new PrismaClient({ adapter });
 }
