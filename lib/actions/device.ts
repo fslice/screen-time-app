@@ -8,35 +8,39 @@ import { assignIcloudAccount } from "@/lib/icloud-accounts";
 import { revalidatePath } from "next/cache";
 
 export async function createDevice(name: string, wordsRequired: number) {
-  const { userId } = await auth();
-  if (!userId) throw new Error("Unauthorized");
+  try {
+    const { userId } = await auth();
+    if (!userId) return { error: "Unauthorized" };
 
-  const passcode = generatePasscode();
-  const mathProblems = passcodesToMathProblems(passcode);
-  const icloud = assignIcloudAccount();
-  const encrypted = encrypt(passcode);
+    const passcode = generatePasscode();
+    const mathProblems = passcodesToMathProblems(passcode);
+    const icloud = assignIcloudAccount();
+    const encrypted = encrypt(passcode);
 
-  const device = await db.device.create({
-    data: {
-      userId,
-      name,
-      encryptedPasscode: encrypted.ciphertext,
-      iv: encrypted.iv,
-      authTag: encrypted.authTag,
-      icloudAccount: icloud.email,
-      wordsRequired,
-    },
-  });
+    const device = await db.device.create({
+      data: {
+        userId,
+        name,
+        encryptedPasscode: encrypted.ciphertext,
+        iv: encrypted.iv,
+        authTag: encrypted.authTag,
+        icloudAccount: icloud.email,
+        wordsRequired,
+      },
+    });
 
-  revalidatePath("/dashboard");
+    revalidatePath("/dashboard");
 
-  // Return the math problems and iCloud account so the UI can show them
-  // during setup. The actual passcode is never sent to the client.
-  return {
-    deviceId: device.id,
-    mathProblems,
-    icloudAccount: icloud,
-  };
+    return {
+      deviceId: device.id,
+      mathProblems,
+      icloudAccount: icloud,
+    };
+  } catch (e) {
+    const msg = e instanceof Error ? e.message : String(e);
+    console.error("createDevice failed:", msg);
+    return { error: msg };
+  }
 }
 
 export async function getDevices() {

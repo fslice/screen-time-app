@@ -27,11 +27,17 @@ export function AddDeviceWizard({ onClose }: { onClose: () => void }) {
   const [deviceName, setDeviceName] = useState("");
   const [wordsRequired, setWordsRequired] = useState(200);
   const [result, setResult] = useState<SetupResult | null>(null);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
 
   function handleCreate() {
+    setErrorMsg(null);
     startTransition(async () => {
       const res = await createDevice(deviceName, wordsRequired);
+      if ("error" in res) {
+        setErrorMsg(res.error);
+        return;
+      }
       setResult(res);
       setStep("passcode");
     });
@@ -184,6 +190,12 @@ export function AddDeviceWizard({ onClose }: { onClose: () => void }) {
                 : "Maximum friction — about 15 minutes."}
             </p>
           </div>
+
+          {errorMsg && (
+            <div className="border border-destructive bg-destructive/10 p-4">
+              <p className="text-xs text-destructive">{errorMsg}</p>
+            </div>
+          )}
 
           <div className="flex gap-3">
             <Button
