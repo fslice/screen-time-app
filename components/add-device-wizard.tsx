@@ -35,7 +35,7 @@ export function AddDeviceWizard({ onClose }: { onClose: () => void }) {
     startTransition(async () => {
       const res = await createDevice(deviceName, wordsRequired);
       if ("error" in res) {
-        setErrorMsg(res.error);
+        setErrorMsg(res.error ?? "Unknown error");
         return;
       }
       setResult(res);
