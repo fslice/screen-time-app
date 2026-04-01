@@ -19,7 +19,7 @@ export default async function DashboardLayout({
         <div className="mx-auto max-w-7xl px-6 py-4 flex items-center justify-between">
           <Link href="/dashboard" className="flex items-center gap-2.5">
             <Lock className="h-4 w-4 text-primary" strokeWidth={2.5} />
-            <span className="font-heading text-2xl tracking-widest">SHUTOUT</span>
+            <span className="font-heading text-2xl tracking-widest">LATCH</span>
           </Link>
 
           <div className="flex items-center gap-6">

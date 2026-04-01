@@ -1,10 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useTransition } from "react";
 import Link from "next/link";
-import { Smartphone, Plus, Trash2, AlertTriangle, RotateCcw } from "lucide-react";
+import { Smartphone, Plus, Trash2, AlertTriangle, RotateCcw, Settings, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { deleteDevice } from "@/lib/actions/device";
+import { Slider } from "@/components/ui/slider";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
+import { deleteDevice, updateDeviceSettings } from "@/lib/actions/device";
 import { AddDeviceWizard } from "@/components/add-device-wizard";
 import { ResetWizard } from "@/components/reset-wizard";
 
@@ -14,15 +17,137 @@ interface Device {
   wordsRequired: number;
   icloudAccount: string;
   unlockedAt: Date | null;
+  autoUnlockAt: Date | null;
   createdAt: Date;
+}
+
+const AUTO_UNLOCK_OPTIONS = [7, 14, 30, 60, 90];
+
+function estimateMinutes(words: number): number {
+  return Math.round(words / 20);
+}
+
+function DeviceSettings({ device, onClose }: { device: Device; onClose: () => void }) {
+  const [wordsRequired, setWordsRequired] = useState(device.wordsRequired);
+  const [autoUnlockEnabled, setAutoUnlockEnabled] = useState(!!device.autoUnlockAt);
+  const [autoUnlockDays, setAutoUnlockDays] = useState(30);
+  const [isPending, startTransition] = useTransition();
+  const [saved, setSaved] = useState(false);
+
+  function handleSave() {
+    startTransition(async () => {
+      const res = await updateDeviceSettings(
+        device.id,
+        wordsRequired,
+        autoUnlockEnabled ? autoUnlockDays : null
+      );
+      if (res.success) {
+        setSaved(true);
+        setTimeout(() => onClose(), 800);
+      }
+    });
+  }
+
+  return (
+    <div className="border border-border p-6 bg-card relative">
+      <div className="absolute top-0 left-0 right-0 h-[2px] bg-primary" />
+
+      <div className="flex items-center gap-3 mb-5">
+        <Settings className="h-4 w-4 text-primary" />
+        <span className="text-xs tracking-[0.25em] uppercase text-primary">
+          Settings — {device.name}
+        </span>
+      </div>
+
+      <div className="space-y-5">
+        {/* Word count slider */}
+        <div className="space-y-3">
+          <Label className="text-xs tracking-widest uppercase">Words to unlock</Label>
+          <div className="flex items-baseline justify-between">
+            <span className="font-heading text-3xl">{wordsRequired}</span>
+            <span className="text-xs text-muted-foreground">~{estimateMinutes(wordsRequired)} min</span>
+          </div>
+          <Slider
+            value={[wordsRequired]}
+            onValueChange={(v) => setWordsRequired(Array.isArray(v) ? v[0] : v)}
+            min={100}
+            max={1000}
+            step={50}
+          />
+        </div>
+
+        {/* Auto-unlock toggle */}
+        <div className="space-y-3">
+          <div className="flex items-center justify-between">
+            <Label htmlFor={`auto-${device.id}`} className="text-xs tracking-widest uppercase cursor-pointer">
+              Auto-unlock timer
+            </Label>
+            <Switch
+              id={`auto-${device.id}`}
+              checked={autoUnlockEnabled}
+              onCheckedChange={setAutoUnlockEnabled}
+            />
+          </div>
+
+          {autoUnlockEnabled && (
+            <div className="flex gap-2">
+              {AUTO_UNLOCK_OPTIONS.map((d) => (
+                <button
+                  key={d}
+                  onClick={() => setAutoUnlockDays(d)}
+                  className={`flex-1 border p-2 text-center text-xs transition-colors ${
+                    autoUnlockDays === d
+                      ? "border-primary bg-primary/10 text-foreground"
+                      : "border-border bg-card text-muted-foreground hover:border-primary/50"
+                  }`}
+                >
+                  {d}d
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Actions */}
+        <div className="flex gap-3">
+          <Button
+            variant="outline"
+            onClick={onClose}
+            className="rounded-none text-xs tracking-widest uppercase"
+          >
+            Cancel
+          </Button>
+          <Button
+            onClick={handleSave}
+            disabled={isPending || saved}
+            className="rounded-none text-xs tracking-widest uppercase"
+          >
+            {saved ? (
+              <>Saved <Check className="h-3 w-3 ml-2" /></>
+            ) : isPending ? (
+              "Saving..."
+            ) : (
+              "Save"
+            )}
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
 }
 
 export function DeviceList({ devices, header }: { devices: Device[]; header?: React.ReactNode }) {
   const [showWizard, setShowWizard] = useState(false);
   const [resettingDevice, setResettingDevice] = useState<Device | null>(null);
+  const [editingDevice, setEditingDevice] = useState<string | null>(null);
   const [deleting, setDeleting] = useState<string | null>(null);
 
-  async function handleDelete(deviceId: string) {
+  async function handleDelete(deviceId: string, deviceName: string) {
+    const confirmed = window.confirm(
+      `Delete "${deviceName}"? Your encrypted passcode will be permanently lost.`
+    );
+    if (!confirmed) return;
+
     setDeleting(deviceId);
     try {
       await deleteDevice(deviceId);
@@ -71,6 +196,16 @@ export function DeviceList({ devices, header }: { devices: Device[]; header?: Re
           {devices.map((device) => {
             const isUnlocked = !!device.unlockedAt;
 
+            if (editingDevice === device.id) {
+              return (
+                <DeviceSettings
+                  key={device.id}
+                  device={device}
+                  onClose={() => setEditingDevice(null)}
+                />
+              );
+            }
+
             return (
               <div
                 key={device.id}
@@ -95,13 +230,21 @@ export function DeviceList({ devices, header }: { devices: Device[]; header?: Re
                       {isUnlocked ? "Passcode Exposed" : "Device"}
                     </span>
                   </div>
-                  <button
-                    onClick={() => handleDelete(device.id)}
-                    disabled={deleting === device.id}
-                    className="text-muted-foreground/40 hover:text-destructive transition-colors opacity-0 group-hover:opacity-100"
-                  >
-                    <Trash2 className="h-3.5 w-3.5" />
-                  </button>
+                  <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <button
+                      onClick={() => setEditingDevice(device.id)}
+                      className="text-muted-foreground/40 hover:text-foreground transition-colors"
+                    >
+                      <Settings className="h-3.5 w-3.5" />
+                    </button>
+                    <button
+                      onClick={() => handleDelete(device.id, device.name)}
+                      disabled={deleting === device.id}
+                      className="text-muted-foreground/40 hover:text-destructive transition-colors"
+                    >
+                      <Trash2 className="h-3.5 w-3.5" />
+                    </button>
+                  </div>
                 </div>
 
                 <h3 className="font-heading text-2xl tracking-wider uppercase mb-1">
@@ -110,6 +253,9 @@ export function DeviceList({ devices, header }: { devices: Device[]; header?: Re
 
                 <p className="text-xs text-muted-foreground mb-6">
                   {device.wordsRequired} words to unlock
+                  {device.autoUnlockAt && (
+                    <> · auto-unlocks {new Date(device.autoUnlockAt).toLocaleDateString()}</>
+                  )}
                 </p>
 
                 <div className="flex flex-col gap-2">

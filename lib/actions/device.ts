@@ -87,6 +87,7 @@ export async function getDevices() {
       wordsRequired: true,
       icloudAccount: true,
       unlockedAt: true,
+      autoUnlockAt: true,
       createdAt: true,
     },
   });
@@ -153,6 +154,41 @@ export async function resetDevice(deviceId: string) {
     console.error("resetDevice failed:", msg);
     return { error: msg };
   }
+}
+
+export async function updateDeviceSettings(
+  deviceId: string,
+  wordsRequired: number,
+  autoUnlockDays: number | null
+) {
+  if (typeof deviceId !== "string" || deviceId.length === 0 || deviceId.length > 100) {
+    return { error: "Invalid device ID" };
+  }
+  if (typeof wordsRequired !== "number" || !Number.isInteger(wordsRequired) || wordsRequired < 100 || wordsRequired > 1000) {
+    return { error: "Words required must be between 100 and 1,000" };
+  }
+  if (autoUnlockDays !== null && (typeof autoUnlockDays !== "number" || !Number.isInteger(autoUnlockDays) || autoUnlockDays < 1 || autoUnlockDays > 365)) {
+    return { error: "Auto-unlock days must be between 1 and 365" };
+  }
+
+  const userId = await ensureUser();
+
+  const device = await db.device.findFirst({
+    where: { id: deviceId, userId },
+  });
+  if (!device) return { error: "Device not found" };
+
+  const autoUnlockAt = autoUnlockDays
+    ? new Date(Date.now() + autoUnlockDays * 24 * 60 * 60 * 1000)
+    : null;
+
+  await db.device.update({
+    where: { id: deviceId },
+    data: { wordsRequired, autoUnlockAt },
+  });
+
+  revalidatePath("/dashboard");
+  return { success: true };
 }
 
 export async function deleteDevice(deviceId: string) {
