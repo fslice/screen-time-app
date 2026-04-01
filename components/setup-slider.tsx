@@ -171,7 +171,7 @@ const SETUP_STEPS: SetupStep[] = [
       'Tap "Add"',
     ],
     icon: <AppWindow className="h-5 w-5" />,
-    images: [],
+    images: ["/setup/40.png", "/setup/41.png", "/setup/42.png", "/setup/43.png", "/setup/44.png"],
   },
   {
     title: "Content & Privacy Restrictions",
@@ -185,7 +185,7 @@ const SETUP_STEPS: SetupStep[] = [
       "Adjust Explicit Content settings",
     ],
     icon: <Shield className="h-5 w-5" />,
-    images: [],
+    images: ["/setup/50.png", "/setup/51.png", "/setup/52.png", "/setup/53.png", "/setup/54.png"],
   },
   {
     title: "Always Allowed Apps",
@@ -198,7 +198,7 @@ const SETUP_STEPS: SetupStep[] = [
       "Remove any apps that shouldn\u2019t bypass Downtime",
     ],
     icon: <Star className="h-5 w-5" />,
-    images: [],
+    images: ["/setup/60.png", "/setup/61.png", "/setup/62.png"],
   },
   {
     title: "Block Account Changes",
@@ -212,7 +212,7 @@ const SETUP_STEPS: SetupStep[] = [
     required: true,
     icon: <UserX className="h-5 w-5" />,
     tip: "This is critical. Without it, all your other settings can be wiped in minutes.",
-    images: [],
+    images: ["/setup/70.png", "/setup/71.png", "/setup/72.png"],
   },
   {
     title: "Screen Distance",
@@ -223,7 +223,7 @@ const SETUP_STEPS: SetupStep[] = [
       "Turn on Screen Distance",
     ],
     icon: <Ruler className="h-5 w-5" />,
-    images: [],
+    images: ["/setup/80.png", "/setup/81.png"],
   },
   {
     title: "Confirm & Lock",
@@ -237,7 +237,7 @@ const SETUP_STEPS: SetupStep[] = [
     ],
     required: true,
     icon: <CheckCircle className="h-5 w-5" />,
-    images: [],
+    images: ["/setup/91.png"],
   },
 ];
 
