@@ -1,18 +1,19 @@
 "use client";
 
 import { useState, useEffect, useRef, useTransition } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
 import { startUnlockSession, submitWord, revealPasscode } from "@/lib/actions/unlock";
-import { Lock, ArrowLeft, Check, X } from "lucide-react";
+import { Lock, ArrowLeft, Check, X, Zap } from "lucide-react";
 import Link from "next/link";
 
 type Phase = "loading" | "typing" | "completed" | "revealed";
 
 export function UnlockChallenge({ deviceId }: { deviceId: string }) {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const inputRef = useRef<HTMLInputElement>(null);
   const [isPending, startTransition] = useTransition();
 
@@ -26,6 +27,7 @@ export function UnlockChallenge({ deviceId }: { deviceId: string }) {
   const [error, setError] = useState(false);
   const [passcode, setPasscode] = useState("");
   const [icloudAccount, setIcloudAccount] = useState("");
+  const [emergencyLoading, setEmergencyLoading] = useState(false);
 
   useEffect(() => {
     startTransition(async () => {
@@ -35,9 +37,15 @@ export function UnlockChallenge({ deviceId }: { deviceId: string }) {
       setWordsRequired(session.wordsRequired);
       setWordsCompleted(session.wordsCompleted);
       setCurrentWord(session.currentWord);
-      setPhase("typing");
+
+      // If returning from successful emergency unlock, jump to completed
+      if (searchParams.get("emergency") === "success") {
+        setPhase("completed");
+      } else {
+        setPhase("typing");
+      }
     });
-  }, [deviceId]);
+  }, [deviceId, searchParams]);
 
   useEffect(() => {
     if (phase === "typing") {
@@ -166,6 +174,39 @@ export function UnlockChallenge({ deviceId }: { deviceId: string }) {
               Wrong — type the word exactly as shown.
             </p>
           )}
+
+          {/* Emergency unlock */}
+          <div className="border-t border-border pt-6 mt-2">
+            <Button
+              variant="outline"
+              disabled={emergencyLoading}
+              onClick={async () => {
+                setEmergencyLoading(true);
+                try {
+                  const res = await fetch("/api/emergency-unlock", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ deviceId }),
+                  });
+                  const data = await res.json();
+                  if (data.url) {
+                    window.location.href = data.url;
+                  } else {
+                    setEmergencyLoading(false);
+                  }
+                } catch {
+                  setEmergencyLoading(false);
+                }
+              }}
+              className="rounded-none text-xs tracking-widest uppercase w-full gap-2"
+            >
+              <Zap className="h-3 w-3" />
+              {emergencyLoading ? "Redirecting..." : "Emergency Unlock — $5"}
+            </Button>
+            <p className="text-[10px] text-muted-foreground mt-2 text-center">
+              Skip the challenge with a one-time payment.
+            </p>
+          </div>
         </>
       )}
 

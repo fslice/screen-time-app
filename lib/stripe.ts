@@ -27,3 +27,5 @@ export const PRICE_IDS = {
 } as const;
 
 export type PlanKey = keyof typeof PRICE_IDS;
+
+export const EMERGENCY_UNLOCK_PRICE = process.env.STRIPE_PRICE_EMERGENCY!;

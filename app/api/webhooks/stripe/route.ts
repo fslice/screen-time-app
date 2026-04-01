@@ -42,6 +42,32 @@ export async function POST(req: Request) {
     case "checkout.session.completed": {
       const session = event.data.object as Stripe.Checkout.Session;
       const clerkUserId = session.metadata?.clerkUserId;
+      const checkoutType = session.metadata?.type;
+
+      // Handle emergency unlock
+      if (checkoutType === "emergency_unlock") {
+        const deviceId = session.metadata?.deviceId;
+        if (clerkUserId && deviceId) {
+          // Verify device belongs to user
+          const device = await db.device.findFirst({
+            where: { id: deviceId, userId: clerkUserId },
+          });
+          if (device) {
+            // Create a completed willpower session so revealPasscode works
+            await db.willpowerSession.create({
+              data: {
+                deviceId,
+                wordsRequired: device.wordsRequired,
+                wordsCompleted: device.wordsRequired,
+                currentWord: null,
+                completedAt: new Date(),
+              },
+            });
+          }
+        }
+        break;
+      }
+
       const plan = session.metadata?.plan as
         | "monthly"
         | "annual"
