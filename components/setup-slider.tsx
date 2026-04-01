@@ -31,9 +31,13 @@ function ImageCarousel({ images }: { images: string[] }) {
       {/* Stacked image container */}
       <div className="relative w-[240px] h-[480px]">
         {images.map((src, i) => {
+          const distance = Math.abs(i - active);
+          // Only show active image and 1 neighbor on each side
+          if (distance > 1) return null;
+
           const isActive = i === active;
           const offset = (i - active) * 14;
-          const zIndex = images.length - Math.abs(i - active);
+          const zIndex = 2 - distance;
           const scale = isActive ? 1 : 0.95;
           const opacity = isActive ? 1 : 0.5;
 
@@ -272,7 +276,7 @@ export function SetupSlider({
   return (
     <div className="flex flex-col md:flex-row gap-12 items-start">
       {/* Left: text panel */}
-      <div className="max-w-lg space-y-6 flex-1">
+      <div className="max-w-lg flex flex-col flex-1">
         {/* Header */}
         <div>
           <div className="flex items-center gap-3 mb-4">
@@ -291,7 +295,7 @@ export function SetupSlider({
         </div>
 
         {/* Progress dots */}
-        <div className="flex items-center gap-1.5">
+        <div className="flex items-center gap-1.5 mt-6">
           {SETUP_STEPS.map((_, i) => (
             <button
               key={i}
@@ -307,50 +311,53 @@ export function SetupSlider({
           ))}
         </div>
 
-        {/* Why this matters */}
-        <div className="border-l-2 border-primary/30 pl-4">
-          <p className="text-xs tracking-widest uppercase text-primary mb-1">
-            Why this matters
-          </p>
-          <p className="text-sm text-muted-foreground">{step.why}</p>
+        {/* Scrollable content area — fixed height so buttons don't shift */}
+        <div className="mt-6 min-h-[360px] space-y-5">
+          {/* Why this matters */}
+          <div className="border-l-2 border-primary/30 pl-4">
+            <p className="text-xs tracking-widest uppercase text-primary mb-1">
+              Why this matters
+            </p>
+            <p className="text-sm text-muted-foreground">{step.why}</p>
+          </div>
+
+          {/* Instructions */}
+          <div className="border border-border p-5 bg-card space-y-3">
+            <p className="text-xs tracking-widest uppercase text-muted-foreground mb-3">
+              On your {deviceName}
+            </p>
+            <ol className="space-y-2.5">
+              {step.instructions.map((instruction, i) => (
+                <li key={i} className="flex items-start gap-3 text-sm">
+                  <span className="text-primary font-heading text-base shrink-0">
+                    {i + 1}.
+                  </span>
+                  <span className="text-muted-foreground">{instruction}</span>
+                </li>
+              ))}
+            </ol>
+          </div>
+
+          {/* Tip */}
+          {step.tip && (
+            <div className="border border-primary/30 bg-primary/5 p-4">
+              <p className="text-xs text-primary">{step.tip}</p>
+            </div>
+          )}
+
+          {/* Required badge */}
+          {step.required && (
+            <div className="flex items-center gap-2">
+              <div className="h-1.5 w-1.5 rounded-full bg-primary" />
+              <span className="text-[10px] tracking-widest uppercase text-primary">
+                Recommended
+              </span>
+            </div>
+          )}
         </div>
 
-        {/* Instructions */}
-        <div className="border border-border p-5 bg-card space-y-3">
-          <p className="text-xs tracking-widest uppercase text-muted-foreground mb-3">
-            On your {deviceName}
-          </p>
-          <ol className="space-y-2.5">
-            {step.instructions.map((instruction, i) => (
-              <li key={i} className="flex items-start gap-3 text-sm">
-                <span className="text-primary font-heading text-base shrink-0">
-                  {i + 1}.
-                </span>
-                <span className="text-muted-foreground">{instruction}</span>
-              </li>
-            ))}
-          </ol>
-        </div>
-
-        {/* Tip */}
-        {step.tip && (
-          <div className="border border-primary/30 bg-primary/5 p-4">
-            <p className="text-xs text-primary">{step.tip}</p>
-          </div>
-        )}
-
-        {/* Required badge */}
-        {step.required && (
-          <div className="flex items-center gap-2">
-            <div className="h-1.5 w-1.5 rounded-full bg-primary" />
-            <span className="text-[10px] tracking-widest uppercase text-primary">
-              Recommended
-            </span>
-          </div>
-        )}
-
-        {/* Navigation */}
-        <div className="flex items-center gap-3">
+        {/* Navigation — always at the same position */}
+        <div className="flex items-center gap-3 mt-6">
           <Button
             variant="outline"
             onClick={isFirst ? onBack : () => setCurrentStep((prev) => prev - 1)}
