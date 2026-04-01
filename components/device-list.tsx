@@ -258,7 +258,7 @@ export function DeviceList({ devices, header }: { devices: Device[]; header?: Re
                   )}
                 </p>
 
-                <div className="flex flex-col gap-2">
+                <div className="flex items-center gap-5">
                   <Link
                     href={`/dashboard/unlock/${device.id}`}
                     className="inline-flex items-center gap-2 text-xs tracking-widest uppercase text-primary hover:text-foreground transition-colors"
@@ -270,8 +270,7 @@ export function DeviceList({ devices, header }: { devices: Device[]; header?: Re
                       onClick={() => setResettingDevice(device)}
                       className="inline-flex items-center gap-2 text-xs tracking-widest uppercase text-destructive hover:text-foreground transition-colors"
                     >
-                      <RotateCcw className="h-3 w-3" />
-                      Reset Passcode
+                      Reset Passcode →
                     </button>
                   )}
                 </div>
