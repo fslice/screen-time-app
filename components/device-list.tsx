@@ -17,7 +17,7 @@ interface Device {
   createdAt: Date;
 }
 
-export function DeviceList({ devices }: { devices: Device[] }) {
+export function DeviceList({ devices, header }: { devices: Device[]; header?: React.ReactNode }) {
   const [showWizard, setShowWizard] = useState(false);
   const [resettingDevice, setResettingDevice] = useState<Device | null>(null);
   const [deleting, setDeleting] = useState<string | null>(null);
@@ -47,6 +47,7 @@ export function DeviceList({ devices }: { devices: Device[] }) {
 
   return (
     <div className="space-y-6">
+      {header}
       <Button
         onClick={() => setShowWizard(true)}
         className="rounded-none px-7 py-5 text-xs tracking-[0.2em] uppercase font-semibold"
