@@ -25,12 +25,15 @@ async function ensureUser() {
   return userId;
 }
 
-export async function createDevice(name: string, wordsRequired: number) {
+export async function createDevice(name: string, wordsRequired: number, autoUnlockDays: number | null = null) {
   if (typeof name !== "string" || name.trim().length === 0 || name.length > 100) {
     return { error: "Invalid device name" };
   }
   if (typeof wordsRequired !== "number" || !Number.isInteger(wordsRequired) || wordsRequired < 1 || wordsRequired > 10000) {
     return { error: "Words required must be an integer between 1 and 10,000" };
+  }
+  if (autoUnlockDays !== null && (typeof autoUnlockDays !== "number" || !Number.isInteger(autoUnlockDays) || autoUnlockDays < 1 || autoUnlockDays > 365)) {
+    return { error: "Auto-unlock days must be between 1 and 365" };
   }
 
   try {
@@ -41,6 +44,10 @@ export async function createDevice(name: string, wordsRequired: number) {
     const icloud = assignIcloudAccount();
     const encrypted = encrypt(passcode);
 
+    const autoUnlockAt = autoUnlockDays
+      ? new Date(Date.now() + autoUnlockDays * 24 * 60 * 60 * 1000)
+      : null;
+
     const device = await db.device.create({
       data: {
         userId,
@@ -50,6 +57,7 @@ export async function createDevice(name: string, wordsRequired: number) {
         authTag: encrypted.authTag,
         icloudAccount: icloud.email,
         wordsRequired,
+        autoUnlockAt,
       },
     });
 

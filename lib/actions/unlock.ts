@@ -19,6 +19,47 @@ export async function startUnlockSession(deviceId: string) {
   });
   if (!device) throw new Error("Device not found");
 
+  // Auto-unlock: if the timer has elapsed, create a completed session immediately
+  const autoUnlocked = device.autoUnlockAt && new Date() >= device.autoUnlockAt;
+
+  if (autoUnlocked) {
+    // Check if there's already a completed session from auto-unlock
+    const completedSession = await db.willpowerSession.findFirst({
+      where: { deviceId, completedAt: { not: null } },
+      orderBy: { createdAt: "desc" },
+    });
+
+    if (completedSession) {
+      return {
+        sessionId: completedSession.id,
+        wordsRequired: device.wordsRequired,
+        wordsCompleted: device.wordsRequired,
+        currentWord: null,
+        deviceName: device.name,
+        autoUnlocked: true,
+      };
+    }
+
+    const session = await db.willpowerSession.create({
+      data: {
+        deviceId,
+        wordsRequired: device.wordsRequired,
+        wordsCompleted: device.wordsRequired,
+        currentWord: null,
+        completedAt: new Date(),
+      },
+    });
+
+    return {
+      sessionId: session.id,
+      wordsRequired: device.wordsRequired,
+      wordsCompleted: device.wordsRequired,
+      currentWord: null,
+      deviceName: device.name,
+      autoUnlocked: true,
+    };
+  }
+
   // Check for an existing incomplete session
   const existing = await db.willpowerSession.findFirst({
     where: { deviceId, completedAt: null },
@@ -32,6 +73,7 @@ export async function startUnlockSession(deviceId: string) {
       wordsCompleted: existing.wordsCompleted,
       currentWord: existing.currentWord ?? getRandomWord(),
       deviceName: device.name,
+      autoUnlocked: false,
     };
   }
 
@@ -50,6 +92,7 @@ export async function startUnlockSession(deviceId: string) {
     wordsCompleted: 0,
     currentWord: firstWord,
     deviceName: device.name,
+    autoUnlocked: false,
   };
 }
 

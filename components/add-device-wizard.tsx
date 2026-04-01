@@ -4,8 +4,10 @@ import { useState, useTransition } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Slider } from "@/components/ui/slider";
+import { Switch } from "@/components/ui/switch";
 import { createDevice } from "@/lib/actions/device";
-import { ArrowRight, ArrowLeft, Check, Lock, Smartphone } from "lucide-react";
+import { ArrowRight, ArrowLeft, Check, Lock, Smartphone, Timer } from "lucide-react";
 import { SetupSlider } from "@/components/setup-slider";
 import { PasscodeEntry } from "@/components/passcode-entry";
 import type { PasscodeOperation } from "@/lib/passcode";
@@ -21,12 +23,18 @@ interface SetupResult {
   icloudAccount: { email: string; label: string };
 }
 
-const WORD_OPTIONS = [100, 200, 400, 600];
+const AUTO_UNLOCK_OPTIONS = [7, 14, 30, 60, 90];
+
+function estimateMinutes(words: number): number {
+  return Math.round(words / 20);
+}
 
 export function AddDeviceWizard({ onClose }: { onClose: () => void }) {
   const [step, setStep] = useState<Step>("name");
   const [deviceName, setDeviceName] = useState("");
   const [wordsRequired, setWordsRequired] = useState(200);
+  const [autoUnlockEnabled, setAutoUnlockEnabled] = useState(false);
+  const [autoUnlockDays, setAutoUnlockDays] = useState(30);
   const [result, setResult] = useState<SetupResult | null>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
@@ -34,7 +42,11 @@ export function AddDeviceWizard({ onClose }: { onClose: () => void }) {
   function handleCreate() {
     setErrorMsg(null);
     startTransition(async () => {
-      const res = await createDevice(deviceName, wordsRequired);
+      const res = await createDevice(
+        deviceName,
+        wordsRequired,
+        autoUnlockEnabled ? autoUnlockDays : null
+      );
       if ("error" in res) {
         setErrorMsg(res.error ?? "Unknown error");
         return;
@@ -146,37 +158,78 @@ export function AddDeviceWizard({ onClose }: { onClose: () => void }) {
             </p>
           </div>
 
-          <div className="space-y-2">
+          {/* Word count slider */}
+          <div className="space-y-4">
             <Label className="text-xs tracking-widest uppercase">
               Words to unlock
             </Label>
-            <div className="grid grid-cols-4 gap-2">
-              {WORD_OPTIONS.map((n) => (
-                <button
-                  key={n}
-                  onClick={() => setWordsRequired(n)}
-                  className={`border p-3 text-center transition-colors ${
-                    wordsRequired === n
-                      ? "border-primary bg-primary/10 text-foreground"
-                      : "border-border bg-card text-muted-foreground hover:border-primary/50"
-                  }`}
-                >
-                  <span className="font-heading text-2xl">{n}</span>
-                  <span className="block text-[10px] tracking-widest uppercase mt-1">
-                    words
-                  </span>
-                </button>
-              ))}
+            <div className="border border-border p-6 bg-card space-y-4">
+              <div className="flex items-baseline justify-between">
+                <span className="font-heading text-5xl text-foreground">
+                  {wordsRequired}
+                </span>
+                <span className="text-sm text-muted-foreground">
+                  ~{estimateMinutes(wordsRequired)} min
+                </span>
+              </div>
+              <Slider
+                value={[wordsRequired]}
+                onValueChange={(v) => setWordsRequired(Array.isArray(v) ? v[0] : v)}
+                min={100}
+                max={1000}
+                step={50}
+              />
+              <div className="flex justify-between text-[10px] tracking-widest uppercase text-muted-foreground">
+                <span>100</span>
+                <span>1000</span>
+              </div>
             </div>
-            <p className="text-xs text-muted-foreground">
-              {wordsRequired <= 100
-                ? "Quick — about 2 minutes."
-                : wordsRequired <= 200
-                ? "Moderate — about 5 minutes."
-                : wordsRequired <= 400
-                ? "Serious — about 10 minutes."
-                : "Maximum friction — about 15 minutes."}
-            </p>
+          </div>
+
+          {/* Auto-unlock toggle */}
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <Timer className="h-4 w-4 text-muted-foreground" />
+                <Label htmlFor="auto-unlock" className="text-xs tracking-widest uppercase cursor-pointer">
+                  Auto-unlock after a set time
+                </Label>
+              </div>
+              <Switch
+                id="auto-unlock"
+                checked={autoUnlockEnabled}
+                onCheckedChange={setAutoUnlockEnabled}
+              />
+            </div>
+
+            {autoUnlockEnabled && (
+              <div className="border border-border p-6 bg-card space-y-4">
+                <div className="flex items-baseline justify-between">
+                  <span className="font-heading text-4xl text-foreground">
+                    {autoUnlockDays}
+                  </span>
+                  <span className="text-sm text-muted-foreground">days</span>
+                </div>
+                <div className="flex gap-2">
+                  {AUTO_UNLOCK_OPTIONS.map((d) => (
+                    <button
+                      key={d}
+                      onClick={() => setAutoUnlockDays(d)}
+                      className={`flex-1 border p-2 text-center text-xs transition-colors ${
+                        autoUnlockDays === d
+                          ? "border-primary bg-primary/10 text-foreground"
+                          : "border-border bg-card text-muted-foreground hover:border-primary/50"
+                      }`}
+                    >
+                      {d}d
+                    </button>
+                  ))}
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  After {autoUnlockDays} days, the typing challenge will be skipped automatically.
+                </p>
+              </div>
+            )}
           </div>
 
           {errorMsg && (

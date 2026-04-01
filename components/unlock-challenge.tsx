@@ -36,10 +36,10 @@ export function UnlockChallenge({ deviceId }: { deviceId: string }) {
       setDeviceName(session.deviceName);
       setWordsRequired(session.wordsRequired);
       setWordsCompleted(session.wordsCompleted);
-      setCurrentWord(session.currentWord);
+      setCurrentWord(session.currentWord ?? "");
 
-      // If returning from successful emergency unlock, jump to completed
-      if (searchParams.get("emergency") === "success") {
+      // Auto-unlock, emergency unlock, or returning from emergency payment
+      if (session.autoUnlocked || searchParams.get("emergency") === "success") {
         setPhase("completed");
       } else {
         setPhase("typing");

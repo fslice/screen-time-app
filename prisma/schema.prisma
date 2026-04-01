@@ -33,6 +33,7 @@ model Device {
   authTag           String   // GCM auth tag (hex)
   icloudAccount     String   // assigned dummy iCloud email
   wordsRequired     Int      @default(600)
+  autoUnlockAt      DateTime? // if set, challenge is skipped after this date
   createdAt         DateTime @default(now())
   updatedAt         DateTime @updatedAt
 
