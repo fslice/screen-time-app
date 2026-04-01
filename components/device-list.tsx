@@ -28,6 +28,7 @@ function estimateMinutes(words: number): number {
 }
 
 function DeviceSettings({ device, onClose }: { device: Device; onClose: () => void }) {
+  const isExposed = !!device.unlockedAt;
   const [wordsRequired, setWordsRequired] = useState(device.wordsRequired);
   const [autoUnlockEnabled, setAutoUnlockEnabled] = useState(!!device.autoUnlockAt);
   const [autoUnlockDays, setAutoUnlockDays] = useState(30);
@@ -69,8 +70,13 @@ function DeviceSettings({ device, onClose }: { device: Device; onClose: () => vo
           </div>
           <Slider
             value={[wordsRequired]}
-            onValueChange={(v) => setWordsRequired(Array.isArray(v) ? v[0] : v)}
-            min={100}
+            onValueChange={(v) => {
+              const n = Array.isArray(v) ? v[0] : v;
+              // Locked devices can only increase word count
+              if (!isExposed && n < device.wordsRequired) return;
+              setWordsRequired(n);
+            }}
+            min={isExposed ? 100 : device.wordsRequired}
             max={1000}
             step={50}
           />
@@ -80,32 +86,48 @@ function DeviceSettings({ device, onClose }: { device: Device; onClose: () => vo
         <div className="space-y-3">
           <div className="flex items-center justify-between">
             <Label htmlFor={`auto-${device.id}`} className="text-xs tracking-widest uppercase cursor-pointer">
-              Auto-unlock timer
+              {isExposed ? "Set new auto-unlock timer" : "Auto-unlock timer"}
             </Label>
             <Switch
               id={`auto-${device.id}`}
               checked={autoUnlockEnabled}
               onCheckedChange={setAutoUnlockEnabled}
+              disabled={!isExposed && !!device.autoUnlockAt}
             />
           </div>
 
-          {autoUnlockEnabled && (
-            <div className="flex gap-2">
-              {AUTO_UNLOCK_OPTIONS.map((d) => (
-                <button
-                  key={d}
-                  onClick={() => setAutoUnlockDays(d)}
-                  className={`flex-1 border p-2 text-center text-xs transition-colors ${
-                    autoUnlockDays === d
-                      ? "border-primary bg-primary/10 text-foreground"
-                      : "border-border bg-card text-muted-foreground hover:border-primary/50"
-                  }`}
-                >
-                  {d}d
-                </button>
-              ))}
-            </div>
-          )}
+          {autoUnlockEnabled && (() => {
+            // For locked devices with existing timer, calculate remaining days
+            // and only allow picking higher values
+            const existingDaysLeft = !isExposed && device.autoUnlockAt
+              ? Math.ceil((new Date(device.autoUnlockAt).getTime() - Date.now()) / (24 * 60 * 60 * 1000))
+              : 0;
+            const minDays = isExposed ? 0 : existingDaysLeft;
+
+            return (
+              <div className="flex gap-2">
+                {AUTO_UNLOCK_OPTIONS.map((d) => {
+                  const disabled = !isExposed && d < minDays;
+                  return (
+                    <button
+                      key={d}
+                      onClick={() => !disabled && setAutoUnlockDays(d)}
+                      disabled={disabled}
+                      className={`flex-1 border p-2 text-center text-xs transition-colors ${
+                        autoUnlockDays === d
+                          ? "border-primary bg-primary/10 text-foreground"
+                          : disabled
+                          ? "border-border bg-card text-muted-foreground/30 cursor-not-allowed"
+                          : "border-border bg-card text-muted-foreground hover:border-primary/50"
+                      }`}
+                    >
+                      {d}d
+                    </button>
+                  );
+                })}
+              </div>
+            );
+          })()}
         </div>
 
         {/* Actions */}
