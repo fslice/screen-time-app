@@ -4,6 +4,7 @@ import Link from "next/link";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Check, X, Minus, ArrowRight } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { PricingButton } from "@/components/pricing-button";
 
 // ─── Nav ────────────────────────────────────────────────────────────────────
 
@@ -12,7 +13,7 @@ function Nav() {
     <header className="fixed top-0 inset-x-0 z-50 bg-background/80 backdrop-blur-md">
       <div className="mx-auto max-w-6xl px-6 py-5 flex items-center justify-between">
         <span className="font-heading text-2xl tracking-wide text-foreground">
-          Shutout
+          Latch
         </span>
 
         <nav className="hidden md:flex items-center gap-8">
@@ -25,6 +26,12 @@ function Nav() {
               {label}
             </a>
           ))}
+          <Link
+            href="/blog"
+            className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+          >
+            Blog
+          </Link>
         </nav>
 
         <Link
@@ -57,14 +64,14 @@ function Hero() {
         </div>
 
         <h1 className="font-heading text-[clamp(3rem,7vw,5.5rem)] leading-[1.05] tracking-tight animate-in delay-1">
-          Stop ignoring your{" "}
-          <span className="text-primary italic">Screen Time</span>{" "}
-          limits with unbreakable{" "}
-          <span className="text-primary italic">willpower.</span>
+          The only{" "}
+          <span className="text-primary italic">unbreakable</span>{" "}
+          app blocker for{" "}
+          <span className="text-primary italic">iPhone.</span>
         </h1>
 
         <p className="mt-8 text-lg text-muted-foreground max-w-2xl mx-auto leading-relaxed animate-in delay-2">
-          Shutout hides your Screen Time password and makes you type 600 random words
+          Latch hides your Screen Time password and makes you type 600 random words
           before you can get it back. No shortcuts. No &ldquo;Ignore Limit.&rdquo;
         </p>
 
@@ -76,7 +83,7 @@ function Hero() {
               "rounded-full px-8 text-base font-medium"
             )}
           >
-            Try Shutout for free
+            Try Latch for free
           </Link>
           <a
             href="#how-it-works"
@@ -129,7 +136,7 @@ function SocialProof() {
 const testimonials = [
   {
     quote:
-      "I deleted every blocker app because I always bypassed them. Shutout is the first thing that actually works.",
+      "I deleted every blocker app because I always bypassed them. Latch is the first thing that actually works.",
     name: "Marcus T.",
     detail: "Product Designer",
   },
@@ -141,7 +148,7 @@ const testimonials = [
   },
   {
     quote:
-      "My therapist asked if she could recommend Shutout to other patients. That says everything.",
+      "My therapist asked if she could recommend Latch to other patients. That says everything.",
     name: "Jordan K.",
     detail: "Writer & Editor",
   },
@@ -198,7 +205,7 @@ const steps = [
     number: "2",
     title: "Lock the password.",
     description:
-      "Shutout generates a random passcode and hides it from you immediately. Your current self chose those limits — your impulsive self can't undo them.",
+      "Latch generates a random passcode and hides it from you immediately. Your current self chose those limits — your impulsive self can't undo them.",
   },
   {
     number: "3",
@@ -269,16 +276,16 @@ interface CompRow {
   feature: string;
   vanilla: Tri;
   thirdParty: Tri;
-  shutout: Tri;
+  latch: Tri;
 }
 
 const compRows: CompRow[] = [
-  { feature: "Built into iOS — no profiles or MDM", vanilla: "yes", thirdParty: "no", shutout: "yes" },
-  { feature: "Can't be bypassed in under a minute", vanilla: "no", thirdParty: "partial", shutout: "yes" },
-  { feature: "Survives deleting the app", vanilla: "yes", thirdParty: "no", shutout: "yes" },
-  { feature: "Real friction before overriding limits", vanilla: "no", thirdParty: "partial", shutout: "yes" },
-  { feature: "You control the rules, not an algorithm", vanilla: "yes", thirdParty: "partial", shutout: "yes" },
-  { feature: "Works without a jailbreak", vanilla: "yes", thirdParty: "yes", shutout: "yes" },
+  { feature: "Built into iOS — no profiles or MDM", vanilla: "yes", thirdParty: "no", latch: "yes" },
+  { feature: "Can't be bypassed in under a minute", vanilla: "no", thirdParty: "partial", latch: "yes" },
+  { feature: "Survives deleting the app", vanilla: "yes", thirdParty: "no", latch: "yes" },
+  { feature: "Real friction before overriding limits", vanilla: "no", thirdParty: "partial", latch: "yes" },
+  { feature: "You control the rules, not an algorithm", vanilla: "yes", thirdParty: "partial", latch: "yes" },
+  { feature: "Works without a jailbreak", vanilla: "yes", thirdParty: "yes", latch: "yes" },
 ];
 
 function TriIcon({ value }: { value: Tri }) {
@@ -292,11 +299,11 @@ function Comparison() {
     <section id="compare" className="py-24 px-6 bg-card">
       <div className="mx-auto max-w-4xl">
         <h2 className="font-heading text-[clamp(2.5rem,5vw,4rem)] leading-[1.1] tracking-tight text-center mb-4">
-          Why <span className="italic text-primary">Shutout?</span>
+          Why <span className="italic text-primary">Latch?</span>
         </h2>
         <p className="text-center text-muted-foreground mb-12 max-w-xl mx-auto">
           Vanilla Screen Time is trivially bypassable. Third-party blockers can be deleted.
-          Shutout makes iOS itself the enforcement.
+          Latch makes iOS itself the enforcement.
         </p>
 
         <div className="overflow-x-auto">
@@ -313,7 +320,7 @@ function Comparison() {
                   Third-party<br />Blockers
                 </th>
                 <th className="text-center px-4 py-4 font-heading text-base text-primary bg-primary/5 rounded-t-lg">
-                  Shutout
+                  Latch
                 </th>
               </tr>
             </thead>
@@ -333,7 +340,7 @@ function Comparison() {
                     <TriIcon value={row.thirdParty} />
                   </td>
                   <td className="px-4 py-4 text-center bg-primary/5">
-                    <TriIcon value={row.shutout} />
+                    <TriIcon value={row.latch} />
                   </td>
                 </tr>
               ))}
@@ -350,23 +357,25 @@ function Comparison() {
 const plans = [
   {
     name: "Monthly",
-    price: "$4.99",
+    plan: "monthly" as const,
+    price: "$2.99",
     period: "/month",
-    description: "Start here. Cancel anytime.",
+    description: "Less than a coffee. Cancel anytime.",
     features: [
       "Unlimited app & category limits",
       "600-word retrieval challenge",
       "Password obfuscation engine",
       "iCloud sync across devices",
     ],
-    cta: "Start Free Trial",
+    cta: "Get Started",
     highlighted: false,
   },
   {
     name: "Annual",
-    price: "$14.99",
+    plan: "annual" as const,
+    price: "$9.99",
     period: "/year",
-    description: "Save 75%. Commit to the habit.",
+    description: "83 cents a month. Commit to the habit.",
     features: [
       "Everything in Monthly",
       "Priority support",
@@ -379,7 +388,8 @@ const plans = [
   },
   {
     name: "Lifetime",
-    price: "$19.99",
+    plan: "lifetime" as const,
+    price: "$14.99",
     period: "once",
     description: "Pay once. Own it forever.",
     features: [
@@ -443,21 +453,15 @@ function Pricing() {
                 ))}
               </ul>
 
-              <Link
-                href="/sign-up"
-                className={cn(
-                  buttonVariants({ variant: plan.highlighted ? "default" : "outline" }),
-                  "w-full rounded-full text-sm font-medium py-5",
-                )}
-              >
+              <PricingButton plan={plan.plan} highlighted={plan.highlighted}>
                 {plan.cta}
-              </Link>
+              </PricingButton>
             </div>
           ))}
         </div>
 
         <p className="mt-8 text-xs text-muted-foreground text-center">
-          All prices USD · Billed through the App Store · Cancel anytime
+          All prices USD · Secure checkout via Stripe · Cancel anytime
         </p>
       </div>
     </section>
@@ -475,7 +479,7 @@ function CtaBanner() {
           <span className="italic opacity-70">enforcement.</span>
         </h2>
         <p className="mt-6 text-background/60 max-w-lg mx-auto">
-          Stop negotiating with your impulses. Let Shutout hold you to the
+          Stop negotiating with your impulses. Let Latch hold you to the
           boundaries you set when you were thinking clearly.
         </p>
         <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
@@ -503,22 +507,26 @@ function Footer() {
       <div className="mx-auto max-w-6xl">
         <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-8">
           <span className="font-heading text-xl tracking-wide text-foreground">
-            Shutout
+            Latch
           </span>
 
           <nav className="flex flex-wrap gap-x-8 gap-y-3 text-sm text-muted-foreground">
-            {["Privacy", "Terms", "Support", "Press"].map((l) => (
-              <a key={l} href="#" className="hover:text-foreground transition-colors">
-                {l}
-              </a>
-            ))}
+            <a href="/privacy" className="hover:text-foreground transition-colors">
+              Privacy
+            </a>
+            <a href="/terms" className="hover:text-foreground transition-colors">
+              Terms
+            </a>
+            <a href="mailto:support@getlatch.app" className="hover:text-foreground transition-colors">
+              Support
+            </a>
           </nav>
         </div>
 
         <div className="mt-8 h-px bg-border" />
 
         <div className="mt-8 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 text-xs text-muted-foreground">
-          <p>&copy; {new Date().getFullYear()} Shutout. All rights reserved.</p>
+          <p>&copy; {new Date().getFullYear()} Latch. All rights reserved.</p>
           <p>Apple and Screen Time are trademarks of Apple Inc.</p>
         </div>
       </div>

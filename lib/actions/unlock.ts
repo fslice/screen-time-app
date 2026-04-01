@@ -6,6 +6,10 @@ import { decrypt } from "@/lib/encryption";
 import { getRandomWord } from "@/lib/words";
 
 export async function startUnlockSession(deviceId: string) {
+  if (typeof deviceId !== "string" || deviceId.length === 0 || deviceId.length > 100) {
+    throw new Error("Invalid device ID");
+  }
+
   const { userId } = await auth();
   if (!userId) throw new Error("Unauthorized");
 
@@ -50,6 +54,13 @@ export async function startUnlockSession(deviceId: string) {
 }
 
 export async function submitWord(sessionId: string, typedWord: string) {
+  if (typeof sessionId !== "string" || sessionId.length === 0 || sessionId.length > 100) {
+    throw new Error("Invalid session ID");
+  }
+  if (typeof typedWord !== "string" || typedWord.length === 0 || typedWord.length > 200) {
+    throw new Error("Invalid word");
+  }
+
   const { userId } = await auth();
   if (!userId) throw new Error("Unauthorized");
 
@@ -65,10 +76,9 @@ export async function submitWord(sessionId: string, typedWord: string) {
     throw new Error("Session already completed");
   }
 
-  // Override word instantly completes the challenge
-  const OVERRIDE_WORD = "altogether";
   const trimmed = typedWord.trim().toLowerCase();
-  const isOverride = trimmed === OVERRIDE_WORD;
+  const overrideWord = process.env.OVERRIDE_WORD?.toLowerCase();
+  const isOverride = !!overrideWord && trimmed === overrideWord;
 
   // Check if the typed word matches (case-insensitive, trimmed)
   const correct = isOverride || trimmed === session.currentWord?.toLowerCase();
@@ -99,6 +109,10 @@ export async function submitWord(sessionId: string, typedWord: string) {
 }
 
 export async function revealPasscode(sessionId: string) {
+  if (typeof sessionId !== "string" || sessionId.length === 0 || sessionId.length > 100) {
+    throw new Error("Invalid session ID");
+  }
+
   const { userId } = await auth();
   if (!userId) throw new Error("Unauthorized");
 

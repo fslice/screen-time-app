@@ -17,9 +17,9 @@ const dmSans = DM_Sans({
 });
 
 export const metadata: Metadata = {
-  title: "Shutout — Stop Ignoring Your Screen Time Limits",
+  title: "Latch — The Only Unbreakable App Blocker for iPhone",
   description:
-    "Shutout sets your Screen Time password in a way you won't remember, and makes you type 600 random words before you can retrieve it.",
+    "Latch locks your Screen Time passcode behind 600 words of typing. No shortcuts, no bypasses, no willpower required.",
 };
 
 export default function RootLayout({

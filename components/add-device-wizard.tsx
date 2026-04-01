@@ -6,17 +6,18 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { createDevice } from "@/lib/actions/device";
 import { ArrowRight, ArrowLeft, Check, Lock, Smartphone } from "lucide-react";
+import { SetupSlider } from "@/components/setup-slider";
+import { PasscodeEntry } from "@/components/passcode-entry";
+import type { PasscodeOperation } from "@/lib/passcode";
 
-type Step = "name" | "setup" | "passcode" | "icloud" | "words" | "done";
-
-interface MathProblem {
-  expression: string;
-  answer: number;
-}
+type Step = "name" | "setup" | "words" | "passcode" | "icloud" | "done";
 
 interface SetupResult {
   deviceId: string;
-  mathProblems: MathProblem[];
+  sequences: {
+    enter: PasscodeOperation[];
+    confirm: PasscodeOperation[];
+  };
   icloudAccount: { email: string; label: string };
 }
 
@@ -47,7 +48,7 @@ export function AddDeviceWizard({ onClose }: { onClose: () => void }) {
     <div className="max-w-lg space-y-8">
       {/* Progress indicator */}
       <div className="flex items-center gap-2">
-        {(["name", "setup", "passcode", "icloud", "words", "done"] as Step[]).map(
+        {(["name", "setup", "words", "passcode", "icloud", "done"] as Step[]).map(
           (s, i) => (
             <div key={s} className="flex items-center gap-2">
               {i > 0 && (
@@ -57,8 +58,8 @@ export function AddDeviceWizard({ onClose }: { onClose: () => void }) {
                 className={`h-2 w-2 rounded-full ${
                   s === step
                     ? "bg-primary"
-                    : (["name", "setup", "passcode", "icloud", "words", "done"].indexOf(s) <
-                      ["name", "setup", "passcode", "icloud", "words", "done"].indexOf(step))
+                    : (["name", "setup", "words", "passcode", "icloud", "done"].indexOf(s) <
+                      ["name", "setup", "words", "passcode", "icloud", "done"].indexOf(step))
                     ? "bg-primary/40"
                     : "bg-border"
                 }`}
@@ -118,44 +119,31 @@ export function AddDeviceWizard({ onClose }: { onClose: () => void }) {
         </div>
       )}
 
-      {/* Step: Setup instructions */}
+      {/* Step: Setup guide slider */}
       {step === "setup" && (
+        <SetupSlider
+          deviceName={deviceName}
+          onComplete={() => setStep("words")}
+          onBack={() => setStep("name")}
+        />
+      )}
+
+      {/* Step: Words + Generate */}
+      {step === "words" && (
         <div className="space-y-6">
           <div>
             <div className="flex items-center gap-3 mb-4">
               <Lock className="h-4 w-4 text-primary" />
               <span className="text-xs tracking-[0.25em] uppercase text-primary">
-                Step 2
+                Almost There
               </span>
             </div>
             <h2 className="font-heading text-4xl tracking-wider uppercase">
-              Set Up Screen Time
+              Choose Your Friction
             </h2>
             <p className="mt-2 text-sm text-muted-foreground">
-              Before we generate your passcode, make sure Screen Time is enabled on your device.
+              How many words should you have to type before unlocking your Screen Time passcode?
             </p>
-          </div>
-
-          <div className="border border-border p-6 bg-card space-y-4">
-            <div className="absolute top-0 left-0 right-0 h-[2px] bg-primary" />
-            <ol className="space-y-3 text-sm text-muted-foreground">
-              <li className="flex items-start gap-3">
-                <span className="text-primary font-heading text-lg">1.</span>
-                Open <span className="text-foreground">Settings</span> on your {deviceName}
-              </li>
-              <li className="flex items-start gap-3">
-                <span className="text-primary font-heading text-lg">2.</span>
-                Tap <span className="text-foreground">Screen Time</span>
-              </li>
-              <li className="flex items-start gap-3">
-                <span className="text-primary font-heading text-lg">3.</span>
-                Turn on Screen Time if it isn&apos;t already
-              </li>
-              <li className="flex items-start gap-3">
-                <span className="text-primary font-heading text-lg">4.</span>
-                Set your <span className="text-foreground">App Limits</span> for the apps you want to restrict
-              </li>
-            </ol>
           </div>
 
           <div className="space-y-2">
@@ -200,7 +188,7 @@ export function AddDeviceWizard({ onClose }: { onClose: () => void }) {
           <div className="flex gap-3">
             <Button
               variant="outline"
-              onClick={() => setStep("name")}
+              onClick={() => setStep("setup")}
               className="rounded-none text-xs tracking-widest uppercase"
             >
               <ArrowLeft className="h-3 w-3 mr-2" /> Back
@@ -217,57 +205,14 @@ export function AddDeviceWizard({ onClose }: { onClose: () => void }) {
         </div>
       )}
 
-      {/* Step: Passcode via math problems */}
+      {/* Step: Passcode guided entry */}
       {step === "passcode" && result && (
-        <div className="space-y-6">
-          <div>
-            <div className="flex items-center gap-3 mb-4">
-              <Lock className="h-4 w-4 text-primary" />
-              <span className="text-xs tracking-[0.25em] uppercase text-primary">
-                Step 3
-              </span>
-            </div>
-            <h2 className="font-heading text-4xl tracking-wider uppercase">
-              Your Passcode
-            </h2>
-            <p className="mt-2 text-sm text-muted-foreground">
-              Solve each problem to find each digit. Enter this as your Screen Time passcode on your device.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-4 gap-3">
-            {result.mathProblems.map((problem, i) => (
-              <div
-                key={i}
-                className="border border-border p-4 bg-card text-center"
-              >
-                <span className="text-[10px] tracking-widest uppercase text-muted-foreground">
-                  Digit {i + 1}
-                </span>
-                <p className="font-heading text-xl mt-2 text-primary">
-                  {problem.expression}
-                </p>
-                <p className="text-xs text-muted-foreground mt-1">= ?</p>
-              </div>
-            ))}
-          </div>
-
-          <div className="border border-primary/30 bg-primary/5 p-4">
-            <p className="text-xs text-primary">
-              Enter this passcode in Settings → Screen Time → Use Screen Time Passcode on your {deviceName}.
-              Don&apos;t write it down — that defeats the purpose.
-            </p>
-          </div>
-
-          <div className="flex gap-3">
-            <Button
-              onClick={() => setStep("icloud")}
-              className="rounded-none text-xs tracking-widest uppercase"
-            >
-              I&apos;ve entered it <ArrowRight className="h-3 w-3 ml-2" />
-            </Button>
-          </div>
-        </div>
+        <PasscodeEntry
+          deviceName={deviceName}
+          enterOps={result.sequences.enter}
+          confirmOps={result.sequences.confirm}
+          onComplete={() => setStep("icloud")}
+        />
       )}
 
       {/* Step: iCloud Account */}
@@ -284,7 +229,7 @@ export function AddDeviceWizard({ onClose }: { onClose: () => void }) {
               Recovery Account
             </h2>
             <p className="mt-2 text-sm text-muted-foreground">
-              Add this iCloud account to your device so Screen Time recovery goes through Shutout, not your personal iCloud.
+              Add this iCloud account to your device so Screen Time recovery goes through Latch, not your personal iCloud.
             </p>
           </div>
 

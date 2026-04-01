@@ -1,9 +1,14 @@
 import { currentUser } from "@clerk/nextjs/server";
+import { auth } from "@clerk/nextjs/server";
 import { getDevices } from "@/lib/actions/device";
+import { getSubscription } from "@/lib/subscription";
 import { DeviceList } from "@/components/device-list";
+import { ManageSubscription } from "@/components/manage-subscription";
+import Link from "next/link";
 
 export default async function DashboardPage() {
   const user = await currentUser();
+  const { userId } = await auth();
 
   let devices: Awaited<ReturnType<typeof getDevices>> = [];
   try {
@@ -11,6 +16,10 @@ export default async function DashboardPage() {
   } catch (e) {
     console.error("Failed to fetch devices:", e);
   }
+
+  const subscription = userId ? await getSubscription(userId) : null;
+  const isActive =
+    subscription?.status === "active" || subscription?.status === "lifetime";
 
   return (
     <div className="space-y-12">
@@ -30,9 +39,42 @@ export default async function DashboardPage() {
             {user?.emailAddresses[0]?.emailAddress}
           </span>
         </p>
+
+        {subscription ? (
+          <div className="mt-4">
+            <ManageSubscription
+              status={subscription.status}
+              planType={subscription.planType}
+            />
+          </div>
+        ) : (
+          <div className="mt-4 border border-primary/30 bg-primary/5 p-4">
+            <p className="text-sm text-muted-foreground">
+              You don&apos;t have an active plan.{" "}
+              <Link href="/#pricing" className="text-primary underline">
+                Choose a plan
+              </Link>{" "}
+              to start locking down your devices.
+            </p>
+          </div>
+        )}
       </div>
 
-      <DeviceList devices={devices} />
+      {isActive ? (
+        <DeviceList devices={devices} />
+      ) : (
+        <div className="border border-border p-8 text-center">
+          <p className="text-muted-foreground text-sm">
+            Subscribe to add and manage devices.
+          </p>
+          <Link
+            href="/#pricing"
+            className="text-primary text-sm underline mt-2 inline-block"
+          >
+            View plans
+          </Link>
+        </div>
+      )}
     </div>
   );
 }

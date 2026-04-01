@@ -21,7 +21,7 @@ model User {
 }
 
 // ── Device ───────────────────────────────────────────────────────────────────
-// A device the user has locked with Shutout.
+// A device the user has locked with Latch.
 // Stores the encrypted Screen Time passcode and unlock settings.
 
 model Device {
@@ -67,7 +67,7 @@ model Subscription {
   stripeCustomerId       String    @unique
   stripeSubscriptionId   String?   @unique // null for lifetime (one-time payment)
   stripePriceId          String?
-  status                 SubStatus @default(trialing)
+  status                 SubStatus @default(active)
   planType               PlanType?
   currentPeriodEnd       DateTime?
   createdAt              DateTime  @default(now())
@@ -76,8 +76,15 @@ model Subscription {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
+// ── Stripe Event ──────────────────────────────────────────────────────────────
+// Guards against duplicate webhook processing on retries.
+
+model StripeEvent {
+  id          String   @id // Stripe event ID (e.g. "evt_...")
+  processedAt DateTime @default(now())
+}
+
 enum SubStatus {
-  trialing
   active
   past_due
   canceled
