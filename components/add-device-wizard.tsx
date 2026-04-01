@@ -56,6 +56,17 @@ export function AddDeviceWizard({ onClose }: { onClose: () => void }) {
     });
   }
 
+  // Setup step needs full width for side-by-side image layout
+  if (step === "setup") {
+    return (
+      <SetupSlider
+        deviceName={deviceName}
+        onComplete={() => setStep("words")}
+        onBack={() => setStep("name")}
+      />
+    );
+  }
+
   return (
     <div className="max-w-lg space-y-8">
       {/* Progress indicator */}
@@ -129,15 +140,6 @@ export function AddDeviceWizard({ onClose }: { onClose: () => void }) {
             </Button>
           </div>
         </div>
-      )}
-
-      {/* Step: Setup guide slider */}
-      {step === "setup" && (
-        <SetupSlider
-          deviceName={deviceName}
-          onComplete={() => setStep("words")}
-          onBack={() => setStep("name")}
-        />
       )}
 
       {/* Step: Words + Generate */}
