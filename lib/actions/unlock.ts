@@ -164,6 +164,7 @@ export async function revealPasscode(sessionId: string) {
     include: {
       device: {
         select: {
+          id: true,
           userId: true,
           encryptedPasscode: true,
           iv: true,
@@ -181,11 +182,18 @@ export async function revealPasscode(sessionId: string) {
     throw new Error("Challenge not completed yet");
   }
 
-  // Mark that the password was revealed
-  await db.willpowerSession.update({
-    where: { id: sessionId },
-    data: { passwordRevealedAt: new Date() },
-  });
+  // Mark that the password was revealed + flag device as unlocked
+  const now = new Date();
+  await Promise.all([
+    db.willpowerSession.update({
+      where: { id: sessionId },
+      data: { passwordRevealedAt: now },
+    }),
+    db.device.update({
+      where: { id: session.device.id },
+      data: { unlockedAt: now },
+    }),
+  ]);
 
   const passcode = decrypt({
     ciphertext: session.device.encryptedPasscode,

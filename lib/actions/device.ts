@@ -2,7 +2,7 @@
 
 import { auth, currentUser } from "@clerk/nextjs/server";
 import { db } from "@/lib/prisma";
-import { encrypt } from "@/lib/encryption";
+import { encrypt, decrypt } from "@/lib/encryption";
 import { generatePasscode, generatePasscodeSequences } from "@/lib/passcode";
 import type { PasscodeSequences } from "@/lib/passcode";
 import { assignIcloudAccount } from "@/lib/icloud-accounts";
@@ -86,9 +86,73 @@ export async function getDevices() {
       name: true,
       wordsRequired: true,
       icloudAccount: true,
+      unlockedAt: true,
       createdAt: true,
     },
   });
+}
+
+export async function getCurrentPasscode(deviceId: string) {
+  if (typeof deviceId !== "string" || deviceId.length === 0 || deviceId.length > 100) {
+    throw new Error("Invalid device ID");
+  }
+
+  const userId = await ensureUser();
+
+  const device = await db.device.findFirst({
+    where: { id: deviceId, userId },
+    select: { encryptedPasscode: true, iv: true, authTag: true },
+  });
+  if (!device) throw new Error("Device not found");
+
+  return decrypt({
+    ciphertext: device.encryptedPasscode,
+    iv: device.iv,
+    authTag: device.authTag,
+  });
+}
+
+export async function resetDevice(deviceId: string) {
+  if (typeof deviceId !== "string" || deviceId.length === 0 || deviceId.length > 100) {
+    return { error: "Invalid device ID" };
+  }
+
+  try {
+    const userId = await ensureUser();
+
+    const device = await db.device.findFirst({
+      where: { id: deviceId, userId },
+    });
+    if (!device) return { error: "Device not found" };
+
+    const passcode = generatePasscode();
+    const sequences = generatePasscodeSequences(passcode);
+    const encrypted = encrypt(passcode);
+
+    // Reset auto-unlock timer if device had one
+    const autoUnlockAt = device.autoUnlockAt
+      ? new Date(Date.now() + (device.autoUnlockAt.getTime() - device.createdAt.getTime()))
+      : null;
+
+    await db.device.update({
+      where: { id: deviceId },
+      data: {
+        encryptedPasscode: encrypted.ciphertext,
+        iv: encrypted.iv,
+        authTag: encrypted.authTag,
+        unlockedAt: null,
+        autoUnlockAt,
+      },
+    });
+
+    revalidatePath("/dashboard");
+
+    return { sequences };
+  } catch (e) {
+    const msg = e instanceof Error ? e.message : String(e);
+    console.error("resetDevice failed:", msg);
+    return { error: msg };
+  }
 }
 
 export async function deleteDevice(deviceId: string) {

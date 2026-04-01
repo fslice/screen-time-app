@@ -34,6 +34,7 @@ model Device {
   icloudAccount     String   // assigned dummy iCloud email
   wordsRequired     Int      @default(600)
   autoUnlockAt      DateTime? // if set, challenge is skipped after this date
+  unlockedAt        DateTime? // set when passcode is revealed, cleared on reset
   createdAt         DateTime @default(now())
   updatedAt         DateTime @updatedAt
 
