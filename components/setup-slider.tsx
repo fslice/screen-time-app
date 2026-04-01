@@ -270,93 +270,132 @@ export function SetupSlider({
   }
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div>
-        <div className="flex items-center gap-3 mb-4">
-          <Lock className="h-4 w-4 text-primary" />
-          <span className="text-xs tracking-[0.25em] uppercase text-primary">
-            Setup Guide
-          </span>
-          <span className="text-xs text-muted-foreground ml-auto">
-            {currentStep + 1} / {SETUP_STEPS.length}
-          </span>
-        </div>
-        <h2 className="font-heading text-4xl tracking-wider uppercase">
-          {step.title}
-        </h2>
-        <p className="mt-1 text-sm text-muted-foreground">{step.subtitle}</p>
-      </div>
-
-      {/* Progress dots */}
-      <div className="flex items-center gap-1.5">
-        {SETUP_STEPS.map((_, i) => (
-          <button
-            key={i}
-            onClick={() => setCurrentStep(i)}
-            className={`h-1.5 flex-1 transition-colors ${
-              i === currentStep
-                ? "bg-primary"
-                : completedSteps.has(i)
-                ? "bg-primary/40"
-                : "bg-border"
-            }`}
-          />
-        ))}
-      </div>
-
-      {/* Content: side-by-side on desktop when images exist */}
-      <div className={hasImages ? "flex flex-col-reverse md:flex-row gap-8 items-start" : ""}>
-        {/* Text content */}
-        <div className="space-y-5 flex-1 min-w-0">
-          {/* Why this matters */}
-          <div className="border-l-2 border-primary/30 pl-4">
-            <p className="text-xs tracking-widest uppercase text-primary mb-1">
-              Why this matters
-            </p>
-            <p className="text-sm text-muted-foreground">{step.why}</p>
+    <div className="flex flex-col md:flex-row gap-12 items-start">
+      {/* Left: text panel */}
+      <div className="max-w-lg space-y-6 flex-1">
+        {/* Header */}
+        <div>
+          <div className="flex items-center gap-3 mb-4">
+            <Lock className="h-4 w-4 text-primary" />
+            <span className="text-xs tracking-[0.25em] uppercase text-primary">
+              Setup Guide
+            </span>
+            <span className="text-xs text-muted-foreground ml-auto">
+              {currentStep + 1} / {SETUP_STEPS.length}
+            </span>
           </div>
-
-          {/* Instructions */}
-          <div className="border border-border p-5 bg-card space-y-3">
-            <p className="text-xs tracking-widest uppercase text-muted-foreground mb-3">
-              On your {deviceName}
-            </p>
-            <ol className="space-y-2.5">
-              {step.instructions.map((instruction, i) => (
-                <li key={i} className="flex items-start gap-3 text-sm">
-                  <span className="text-primary font-heading text-base shrink-0">
-                    {i + 1}.
-                  </span>
-                  <span className="text-muted-foreground">{instruction}</span>
-                </li>
-              ))}
-            </ol>
-          </div>
-
-          {/* Tip */}
-          {step.tip && (
-            <div className="border border-primary/30 bg-primary/5 p-4">
-              <p className="text-xs text-primary">{step.tip}</p>
-            </div>
-          )}
-
-          {/* Required badge */}
-          {step.required && (
-            <div className="flex items-center gap-2">
-              <div className="h-1.5 w-1.5 rounded-full bg-primary" />
-              <span className="text-[10px] tracking-widest uppercase text-primary">
-                Recommended
-              </span>
-            </div>
-          )}
+          <h2 className="font-heading text-4xl tracking-wider uppercase">
+            {step.title}
+          </h2>
+          <p className="mt-1 text-sm text-muted-foreground">{step.subtitle}</p>
         </div>
 
-        {/* Images — beside text on desktop, above on mobile */}
+        {/* Progress dots */}
+        <div className="flex items-center gap-1.5">
+          {SETUP_STEPS.map((_, i) => (
+            <button
+              key={i}
+              onClick={() => setCurrentStep(i)}
+              className={`h-1.5 flex-1 transition-colors ${
+                i === currentStep
+                  ? "bg-primary"
+                  : completedSteps.has(i)
+                  ? "bg-primary/40"
+                  : "bg-border"
+              }`}
+            />
+          ))}
+        </div>
+
+        {/* Why this matters */}
+        <div className="border-l-2 border-primary/30 pl-4">
+          <p className="text-xs tracking-widest uppercase text-primary mb-1">
+            Why this matters
+          </p>
+          <p className="text-sm text-muted-foreground">{step.why}</p>
+        </div>
+
+        {/* Instructions */}
+        <div className="border border-border p-5 bg-card space-y-3">
+          <p className="text-xs tracking-widest uppercase text-muted-foreground mb-3">
+            On your {deviceName}
+          </p>
+          <ol className="space-y-2.5">
+            {step.instructions.map((instruction, i) => (
+              <li key={i} className="flex items-start gap-3 text-sm">
+                <span className="text-primary font-heading text-base shrink-0">
+                  {i + 1}.
+                </span>
+                <span className="text-muted-foreground">{instruction}</span>
+              </li>
+            ))}
+          </ol>
+        </div>
+
+        {/* Tip */}
+        {step.tip && (
+          <div className="border border-primary/30 bg-primary/5 p-4">
+            <p className="text-xs text-primary">{step.tip}</p>
+          </div>
+        )}
+
+        {/* Required badge */}
+        {step.required && (
+          <div className="flex items-center gap-2">
+            <div className="h-1.5 w-1.5 rounded-full bg-primary" />
+            <span className="text-[10px] tracking-widest uppercase text-primary">
+              Recommended
+            </span>
+          </div>
+        )}
+
+        {/* Navigation */}
+        <div className="flex items-center gap-3">
+          <Button
+            variant="outline"
+            onClick={isFirst ? onBack : () => setCurrentStep((prev) => prev - 1)}
+            className="rounded-none text-xs tracking-widest uppercase"
+          >
+            <ArrowLeft className="h-3 w-3 mr-2" />
+            {isFirst ? "Back" : "Prev"}
+          </Button>
+
+          <div className="flex-1" />
+
+          {!step.required && !isLast && (
+            <Button
+              variant="outline"
+              onClick={skipStep}
+              className="rounded-none text-xs tracking-widest uppercase text-muted-foreground"
+            >
+              Skip
+              <ChevronRight className="h-3 w-3 ml-1" />
+            </Button>
+          )}
+
+          <Button
+            onClick={markComplete}
+            className="rounded-none text-xs tracking-widest uppercase"
+          >
+            {isLast ? (
+              <>
+                Continue <ArrowRight className="h-3 w-3 ml-2" />
+              </>
+            ) : (
+              <>
+                Done <Check className="h-3 w-3 ml-2" />
+              </>
+            )}
+          </Button>
+        </div>
+      </div>
+
+      {/* Right: images — completely separate container */}
+      <div className="hidden md:flex md:sticky md:top-24 shrink-0">
         {hasImages ? (
           <ImageCarousel key={currentStep} images={step.images} />
         ) : (
-          <div className="border border-dashed border-border bg-card/50 w-[220px] h-[380px] mx-auto flex items-center justify-center rounded-2xl shrink-0">
+          <div className="border border-dashed border-border bg-card/50 w-[240px] h-[480px] flex items-center justify-center rounded-2xl">
             <div className="text-center text-muted-foreground">
               <SmartphoneIcon className="h-8 w-8 mx-auto mb-2 opacity-40" />
               <p className="text-xs tracking-widest uppercase opacity-60">
@@ -367,44 +406,11 @@ export function SetupSlider({
         )}
       </div>
 
-      {/* Navigation */}
-      <div className="flex items-center gap-3">
-        <Button
-          variant="outline"
-          onClick={isFirst ? onBack : () => setCurrentStep((prev) => prev - 1)}
-          className="rounded-none text-xs tracking-widest uppercase"
-        >
-          <ArrowLeft className="h-3 w-3 mr-2" />
-          {isFirst ? "Back" : "Prev"}
-        </Button>
-
-        <div className="flex-1" />
-
-        {!step.required && !isLast && (
-          <Button
-            variant="outline"
-            onClick={skipStep}
-            className="rounded-none text-xs tracking-widest uppercase text-muted-foreground"
-          >
-            Skip
-            <ChevronRight className="h-3 w-3 ml-1" />
-          </Button>
+      {/* Mobile: images below everything */}
+      <div className="md:hidden">
+        {hasImages && (
+          <ImageCarousel key={`mobile-${currentStep}`} images={step.images} />
         )}
-
-        <Button
-          onClick={markComplete}
-          className="rounded-none text-xs tracking-widest uppercase"
-        >
-          {isLast ? (
-            <>
-              Continue <ArrowRight className="h-3 w-3 ml-2" />
-            </>
-          ) : (
-            <>
-              Done <Check className="h-3 w-3 ml-2" />
-            </>
-          )}
-        </Button>
       </div>
     </div>
   );
