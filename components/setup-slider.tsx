@@ -30,10 +30,10 @@ function ImageCarousel({ images }: { images: string[] }) {
   return (
     <div className="flex flex-col items-center gap-3">
       {/* Stacked image container */}
-      <div className="relative w-full flex justify-center" style={{ minHeight: 340 }}>
+      <div className="relative flex justify-center" style={{ minHeight: 420 }}>
         {images.map((src, i) => {
           const isActive = i === active;
-          const offset = (i - active) * 12;
+          const offset = (i - active) * 14;
           const zIndex = images.length - Math.abs(i - active);
           const scale = isActive ? 1 : 0.95;
           const opacity = isActive ? 1 : 0.5;
@@ -53,8 +53,8 @@ function ImageCarousel({ images }: { images: string[] }) {
                 <Image
                   src={src}
                   alt={`Step screenshot ${i + 1}`}
-                  width={180}
-                  height={390}
+                  width={220}
+                  height={476}
                   className="object-cover"
                   priority={i === 0}
                 />
@@ -64,13 +64,13 @@ function ImageCarousel({ images }: { images: string[] }) {
         })}
       </div>
 
-      {/* Navigation */}
+      {/* Navigation arrows + dots */}
       {images.length > 1 && (
         <div className="flex items-center gap-3">
           <button
             onClick={() => setActive((prev) => Math.max(0, prev - 1))}
             disabled={active === 0}
-            className="p-1 text-muted-foreground hover:text-foreground disabled:opacity-30 transition-colors"
+            className="p-1.5 border border-border rounded-full text-muted-foreground hover:text-foreground hover:border-foreground disabled:opacity-30 transition-colors"
           >
             <ChevronLeft className="h-4 w-4" />
           </button>
@@ -92,7 +92,7 @@ function ImageCarousel({ images }: { images: string[] }) {
           <button
             onClick={() => setActive((prev) => Math.min(images.length - 1, prev + 1))}
             disabled={active === images.length - 1}
-            className="p-1 text-muted-foreground hover:text-foreground disabled:opacity-30 transition-colors"
+            className="p-1.5 border border-border rounded-full text-muted-foreground hover:text-foreground hover:border-foreground disabled:opacity-30 transition-colors"
           >
             <ChevronRight className="h-4 w-4" />
           </button>
@@ -257,6 +257,7 @@ export function SetupSlider({
   const step = SETUP_STEPS[currentStep];
   const isFirst = currentStep === 0;
   const isLast = currentStep === SETUP_STEPS.length - 1;
+  const hasImages = step.images.length > 0;
 
   function markComplete() {
     setCompletedSteps((prev) => new Set(prev).add(currentStep));
@@ -307,61 +308,70 @@ export function SetupSlider({
         ))}
       </div>
 
-      {/* Screenshots */}
-      {step.images.length > 0 ? (
-        <ImageCarousel images={step.images} />
-      ) : (
-        <div className="border border-dashed border-border bg-card/50 aspect-[9/16] max-h-[320px] w-auto mx-auto flex items-center justify-center rounded-2xl">
-          <div className="text-center text-muted-foreground">
-            <SmartphoneIcon className="h-8 w-8 mx-auto mb-2 opacity-40" />
-            <p className="text-xs tracking-widest uppercase opacity-60">
-              Screenshot
+      {/* Content: side-by-side on desktop when images exist */}
+      <div className={hasImages ? "grid md:grid-cols-[1fr,auto] gap-8 items-start" : ""}>
+        {/* Text content */}
+        <div className="space-y-5">
+          {/* Why this matters */}
+          <div className="border-l-2 border-primary/30 pl-4">
+            <p className="text-xs tracking-widest uppercase text-primary mb-1">
+              Why this matters
             </p>
+            <p className="text-sm text-muted-foreground">{step.why}</p>
           </div>
-        </div>
-      )}
 
-      {/* Why this matters */}
-      <div className="border-l-2 border-primary/30 pl-4">
-        <p className="text-xs tracking-widest uppercase text-primary mb-1">
-          Why this matters
-        </p>
-        <p className="text-sm text-muted-foreground">{step.why}</p>
-      </div>
+          {/* Instructions */}
+          <div className="border border-border p-5 bg-card space-y-3">
+            <p className="text-xs tracking-widest uppercase text-muted-foreground mb-3">
+              On your {deviceName}
+            </p>
+            <ol className="space-y-2.5">
+              {step.instructions.map((instruction, i) => (
+                <li key={i} className="flex items-start gap-3 text-sm">
+                  <span className="text-primary font-heading text-base shrink-0">
+                    {i + 1}.
+                  </span>
+                  <span className="text-muted-foreground">{instruction}</span>
+                </li>
+              ))}
+            </ol>
+          </div>
 
-      {/* Instructions */}
-      <div className="border border-border p-5 bg-card space-y-3">
-        <p className="text-xs tracking-widest uppercase text-muted-foreground mb-3">
-          On your {deviceName}
-        </p>
-        <ol className="space-y-2.5">
-          {step.instructions.map((instruction, i) => (
-            <li key={i} className="flex items-start gap-3 text-sm">
-              <span className="text-primary font-heading text-base shrink-0">
-                {i + 1}.
+          {/* Tip */}
+          {step.tip && (
+            <div className="border border-primary/30 bg-primary/5 p-4">
+              <p className="text-xs text-primary">{step.tip}</p>
+            </div>
+          )}
+
+          {/* Required badge */}
+          {step.required && (
+            <div className="flex items-center gap-2">
+              <div className="h-1.5 w-1.5 rounded-full bg-primary" />
+              <span className="text-[10px] tracking-widest uppercase text-primary">
+                Recommended
               </span>
-              <span className="text-muted-foreground">{instruction}</span>
-            </li>
-          ))}
-        </ol>
+            </div>
+          )}
+        </div>
+
+        {/* Images — beside text on desktop, below on mobile */}
+        {hasImages ? (
+          <div className="flex justify-center md:sticky md:top-8">
+            {/* key forces remount on step change to reset carousel to image 1 */}
+            <ImageCarousel key={currentStep} images={step.images} />
+          </div>
+        ) : (
+          <div className="border border-dashed border-border bg-card/50 aspect-[9/16] max-h-[320px] w-auto mx-auto flex items-center justify-center rounded-2xl md:w-[220px]">
+            <div className="text-center text-muted-foreground">
+              <SmartphoneIcon className="h-8 w-8 mx-auto mb-2 opacity-40" />
+              <p className="text-xs tracking-widest uppercase opacity-60">
+                Screenshot
+              </p>
+            </div>
+          </div>
+        )}
       </div>
-
-      {/* Tip */}
-      {step.tip && (
-        <div className="border border-primary/30 bg-primary/5 p-4">
-          <p className="text-xs text-primary">{step.tip}</p>
-        </div>
-      )}
-
-      {/* Required badge */}
-      {step.required && (
-        <div className="flex items-center gap-2">
-          <div className="h-1.5 w-1.5 rounded-full bg-primary" />
-          <span className="text-[10px] tracking-widest uppercase text-primary">
-            Recommended
-          </span>
-        </div>
-      )}
 
       {/* Navigation */}
       <div className="flex items-center gap-3">
