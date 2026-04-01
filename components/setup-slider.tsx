@@ -18,7 +18,6 @@ import {
   ChevronLeft,
   Ruler,
 } from "lucide-react";
-import Image from "next/image";
 
 // ─── Image Carousel ────────────────────────────────────────────────────────────
 
@@ -28,9 +27,9 @@ function ImageCarousel({ images }: { images: string[] }) {
   if (images.length === 0) return null;
 
   return (
-    <div className="flex flex-col items-center gap-3">
+    <div className="flex flex-col items-center gap-3 w-[240px] shrink-0">
       {/* Stacked image container */}
-      <div className="relative flex justify-center" style={{ minHeight: 420 }}>
+      <div className="relative w-[240px] h-[480px]">
         {images.map((src, i) => {
           const isActive = i === active;
           const offset = (i - active) * 14;
@@ -41,7 +40,7 @@ function ImageCarousel({ images }: { images: string[] }) {
           return (
             <div
               key={src}
-              className="absolute transition-all duration-300 ease-out cursor-pointer"
+              className="absolute inset-0 transition-all duration-300 ease-out cursor-pointer flex items-center justify-center"
               style={{
                 transform: `translateX(${offset}px) translateY(${Math.abs(offset) * 0.5}px) rotate(${offset * 0.15}deg) scale(${scale})`,
                 zIndex,
@@ -50,13 +49,11 @@ function ImageCarousel({ images }: { images: string[] }) {
               onClick={() => setActive(i)}
             >
               <div className="border-2 border-border rounded-2xl overflow-hidden shadow-lg bg-card">
-                <Image
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
                   src={src}
                   alt={`Step screenshot ${i + 1}`}
-                  width={220}
-                  height={476}
-                  className="object-cover"
-                  priority={i === 0}
+                  className="w-[220px] h-auto"
                 />
               </div>
             </div>
@@ -309,9 +306,9 @@ export function SetupSlider({
       </div>
 
       {/* Content: side-by-side on desktop when images exist */}
-      <div className={hasImages ? "grid md:grid-cols-[1fr,auto] gap-8 items-start" : ""}>
+      <div className={hasImages ? "flex flex-col-reverse md:flex-row gap-8 items-start" : ""}>
         {/* Text content */}
-        <div className="space-y-5">
+        <div className="space-y-5 flex-1 min-w-0">
           {/* Why this matters */}
           <div className="border-l-2 border-primary/30 pl-4">
             <p className="text-xs tracking-widest uppercase text-primary mb-1">
@@ -355,14 +352,11 @@ export function SetupSlider({
           )}
         </div>
 
-        {/* Images — beside text on desktop, below on mobile */}
+        {/* Images — beside text on desktop, above on mobile */}
         {hasImages ? (
-          <div className="flex justify-center md:sticky md:top-8">
-            {/* key forces remount on step change to reset carousel to image 1 */}
-            <ImageCarousel key={currentStep} images={step.images} />
-          </div>
+          <ImageCarousel key={currentStep} images={step.images} />
         ) : (
-          <div className="border border-dashed border-border bg-card/50 aspect-[9/16] max-h-[320px] w-auto mx-auto flex items-center justify-center rounded-2xl md:w-[220px]">
+          <div className="border border-dashed border-border bg-card/50 w-[220px] h-[380px] mx-auto flex items-center justify-center rounded-2xl shrink-0">
             <div className="text-center text-muted-foreground">
               <SmartphoneIcon className="h-8 w-8 mx-auto mb-2 opacity-40" />
               <p className="text-xs tracking-widest uppercase opacity-60">
