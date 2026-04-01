@@ -111,22 +111,23 @@ export function DeviceList({ devices }: { devices: Device[] }) {
                   {device.wordsRequired} words to unlock
                 </p>
 
-                {isUnlocked ? (
-                  <button
-                    onClick={() => setResettingDevice(device)}
-                    className="inline-flex items-center gap-2 text-xs tracking-widest uppercase text-destructive hover:text-foreground transition-colors"
-                  >
-                    <RotateCcw className="h-3 w-3" />
-                    Reset Passcode →
-                  </button>
-                ) : (
+                <div className="flex flex-col gap-2">
                   <Link
                     href={`/dashboard/unlock/${device.id}`}
                     className="inline-flex items-center gap-2 text-xs tracking-widest uppercase text-primary hover:text-foreground transition-colors"
                   >
                     Unlock Passcode →
                   </Link>
-                )}
+                  {isUnlocked && (
+                    <button
+                      onClick={() => setResettingDevice(device)}
+                      className="inline-flex items-center gap-2 text-xs tracking-widest uppercase text-destructive hover:text-foreground transition-colors"
+                    >
+                      <RotateCcw className="h-3 w-3" />
+                      Reset Passcode
+                    </button>
+                  )}
+                </div>
               </div>
             );
           })}

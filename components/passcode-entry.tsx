@@ -12,6 +12,7 @@ interface PasscodeEntryProps {
   enterOps: PasscodeOperation[];
   confirmOps: PasscodeOperation[];
   onComplete: () => void;
+  isReset?: boolean;
 }
 
 export function PasscodeEntry({
@@ -19,6 +20,7 @@ export function PasscodeEntry({
   enterOps,
   confirmOps,
   onComplete,
+  isReset = false,
 }: PasscodeEntryProps) {
   const [phase, setPhase] = useState<Phase>("enter");
   const [opIndex, setOpIndex] = useState(0);
@@ -90,7 +92,9 @@ export function PasscodeEntry({
               ? `Good. Now do it again to confirm — the phone will ask you to re-enter the passcode.`
               : `Your Screen Time passcode is locked in on ${deviceName}.`
             : phase === "enter"
-            ? `Follow along on your ${deviceName}. Settings > Screen Time > Change Screen Time Passcode. Enter 1111, then enter the new passcode digit by digit.`
+            ? isReset
+              ? `Your ${deviceName} should now be asking for a new passcode. Enter it digit by digit.`
+              : `Follow along on your ${deviceName}. Settings > Screen Time > Change Screen Time Passcode. Enter 1111, then enter the new passcode digit by digit.`
             : `Re-enter the same passcode to confirm it on your ${deviceName}.`}
         </p>
       </div>

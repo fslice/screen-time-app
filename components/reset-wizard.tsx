@@ -146,6 +146,7 @@ export function ResetWizard({
           enterOps={sequences.enter}
           confirmOps={sequences.confirm}
           onComplete={() => setStep("done")}
+          isReset
         />
       )}
 
