@@ -283,7 +283,7 @@ export function DeviceList({ devices, header }: { devices: Device[]; header?: Re
                 <div className="flex items-center gap-5">
                   <Link
                     href={`/dashboard/unlock/${device.id}`}
-                    className="inline-flex items-center gap-2 text-xs tracking-widest uppercase text-primary hover:text-foreground transition-colors"
+                    className="inline-flex items-center gap-2 text-xs tracking-widest uppercase text-foreground hover:text-primary transition-colors"
                   >
                     Unlock Passcode →
                   </Link>

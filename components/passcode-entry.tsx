@@ -130,7 +130,7 @@ export function PasscodeEntry({
       {!isDone && currentOp && (
         <div className="mt-8">
           {currentOp.type === "digit" ? (
-            <div className="border border-border p-8 bg-card text-center">
+            <div className="border border-border p-8 bg-card text-center min-h-[200px] flex flex-col items-center justify-center">
               <span className="text-[10px] tracking-widest uppercase text-muted-foreground">
                 Solve & enter digit {currentDigitPosition + 1}
               </span>
@@ -145,8 +145,8 @@ export function PasscodeEntry({
               </p>
             </div>
           ) : (
-            <div className="border border-destructive/30 bg-destructive/5 p-8 text-center">
-              <Delete className="h-8 w-8 mx-auto text-destructive/70" />
+            <div className="border border-destructive/30 bg-destructive/5 p-8 text-center min-h-[200px] flex flex-col items-center justify-center">
+              <Delete className="h-8 w-8 text-destructive/70" />
               <p className="font-heading text-2xl mt-4 tracking-wider uppercase text-destructive/80">
                 Press Delete
               </p>
