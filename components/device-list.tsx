@@ -10,7 +10,6 @@ import { Label } from "@/components/ui/label";
 import { deleteDevice, updateDeviceSettings } from "@/lib/actions/device";
 import { AddDeviceWizard } from "@/components/add-device-wizard";
 import { ResetWizard } from "@/components/reset-wizard";
-import { DashboardFaq } from "@/components/dashboard-faq";
 
 interface Device {
   id: string;
@@ -304,7 +303,6 @@ export function DeviceList({ devices, header }: { devices: Device[]; header?: Re
         </div>
       )}
 
-      <DashboardFaq devices={devices.map(d => ({ id: d.id, name: d.name }))} />
     </div>
   );
 }

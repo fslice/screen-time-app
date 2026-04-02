@@ -5,6 +5,7 @@ import { getSubscription } from "@/lib/subscription";
 import { DeviceList } from "@/components/device-list";
 import { ManageSubscription } from "@/components/manage-subscription";
 import { CheckoutBanner } from "@/components/checkout-banner";
+import { DashboardFaq } from "@/components/dashboard-faq";
 import Link from "next/link";
 
 export default async function DashboardPage() {
@@ -75,5 +76,10 @@ export default async function DashboardPage() {
     );
   }
 
-  return <DeviceList devices={devices} header={dashboardHeader} />;
+  return (
+    <>
+      <DeviceList devices={devices} header={dashboardHeader} />
+      <DashboardFaq devices={devices.map(d => ({ id: d.id, name: d.name }))} />
+    </>
+  );
 }

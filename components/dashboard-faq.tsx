@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useTransition } from "react";
+import { useRouter } from "next/navigation";
 import {
   Accordion,
   AccordionContent,
@@ -17,6 +18,7 @@ interface Device {
 }
 
 export function DashboardFaq({ devices }: { devices: Device[] }) {
+  const router = useRouter();
   const [showRecovery, setShowRecovery] = useState(false);
   const [freeUsed, setFreeUsed] = useState(false);
   const [selectedDevice, setSelectedDevice] = useState<string | null>(null);
@@ -47,6 +49,10 @@ export function DashboardFaq({ devices }: { devices: Device[] }) {
       }
       setUnlocked(true);
       setFreeUsed(true);
+      // Redirect to the unlock page where they can reveal the passcode
+      setTimeout(() => {
+        router.push(`/dashboard/unlock/${selectedDevice}?emergency=success`);
+      }, 1000);
     });
   }
 
@@ -184,7 +190,7 @@ export function DashboardFaq({ devices }: { devices: Device[] }) {
               <div className="border border-primary/30 bg-primary/5 p-4 flex items-center gap-3">
                 <Check className="h-4 w-4 text-primary" />
                 <p className="text-xs text-primary">
-                  Device unlocked. Go to the device card to reveal your passcode.
+                  Device unlocked. Redirecting to reveal your passcode...
                 </p>
               </div>
             )}
