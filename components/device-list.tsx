@@ -97,17 +97,18 @@ function DeviceSettings({ device, onClose }: { device: Device; onClose: () => vo
           </div>
 
           {autoUnlockEnabled && (() => {
-            // For locked devices with existing timer, calculate remaining days
-            // and only allow picking higher values
+            // For locked devices with existing timer, find the closest
+            // matching option and only allow strictly higher values
             const existingDaysLeft = !isExposed && device.autoUnlockAt
               ? Math.ceil((new Date(device.autoUnlockAt).getTime() - Date.now()) / (24 * 60 * 60 * 1000))
               : 0;
-            const minDays = isExposed ? 0 : existingDaysLeft;
+            // Find the smallest option that covers the remaining days
+            const currentOption = AUTO_UNLOCK_OPTIONS.find(o => o >= existingDaysLeft) ?? 0;
 
             return (
               <div className="flex gap-2">
                 {AUTO_UNLOCK_OPTIONS.map((d) => {
-                  const disabled = !isExposed && d < minDays;
+                  const disabled = !isExposed && d <= currentOption;
                   return (
                     <button
                       key={d}
