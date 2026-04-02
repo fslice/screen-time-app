@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import {
   ArrowRight,
@@ -259,6 +259,16 @@ export function SetupSlider({
   const isFirst = currentStep === 0;
   const isLast = currentStep === SETUP_STEPS.length - 1;
   const hasImages = step.images.length > 0;
+
+  // Preload next step's images
+  useEffect(() => {
+    const nextStep = SETUP_STEPS[currentStep + 1];
+    if (!nextStep) return;
+    nextStep.images.forEach((src) => {
+      const img = new Image();
+      img.src = src;
+    });
+  }, [currentStep]);
 
   function markComplete() {
     setCompletedSteps((prev) => new Set(prev).add(currentStep));
