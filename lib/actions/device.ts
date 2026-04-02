@@ -93,6 +93,59 @@ export async function getDevices() {
   });
 }
 
+export async function freeEmergencyUnlock(deviceId: string) {
+  if (typeof deviceId !== "string" || deviceId.length === 0 || deviceId.length > 100) {
+    return { error: "Invalid device ID" };
+  }
+
+  const userId = await ensureUser();
+
+  const user = await db.user.findUnique({ where: { id: userId } });
+  if (!user) return { error: "User not found" };
+
+  if (user.freeUnlockUsed) {
+    return { error: "already_used" };
+  }
+
+  const device = await db.device.findFirst({
+    where: { id: deviceId, userId },
+  });
+  if (!device) return { error: "Device not found" };
+
+  // Create completed session + flag device as unlocked + mark free unlock as used
+  await Promise.all([
+    db.willpowerSession.create({
+      data: {
+        deviceId,
+        wordsRequired: device.wordsRequired,
+        wordsCompleted: device.wordsRequired,
+        currentWord: null,
+        completedAt: new Date(),
+      },
+    }),
+    db.device.update({
+      where: { id: deviceId },
+      data: { unlockedAt: new Date() },
+    }),
+    db.user.update({
+      where: { id: userId },
+      data: { freeUnlockUsed: true },
+    }),
+  ]);
+
+  revalidatePath("/dashboard");
+  return { success: true };
+}
+
+export async function getFreeUnlockStatus() {
+  const userId = await ensureUser();
+  const user = await db.user.findUnique({
+    where: { id: userId },
+    select: { freeUnlockUsed: true },
+  });
+  return { used: user?.freeUnlockUsed ?? false };
+}
+
 export async function getCurrentPasscode(deviceId: string) {
   if (typeof deviceId !== "string" || deviceId.length === 0 || deviceId.length > 100) {
     throw new Error("Invalid device ID");

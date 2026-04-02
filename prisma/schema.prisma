@@ -11,10 +11,11 @@ datasource db {
 // Mirrored from Clerk via webhook. Clerk user ID is the primary key.
 
 model User {
-  id        String   @id // Clerk user ID (e.g. "user_2abc...")
-  email     String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id              String   @id // Clerk user ID (e.g. "user_2abc...")
+  email           String
+  freeUnlockUsed  Boolean  @default(false)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
 
   devices      Device[]
   subscription Subscription?
