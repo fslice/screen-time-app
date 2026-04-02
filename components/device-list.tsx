@@ -291,7 +291,7 @@ export function DeviceList({ devices, header }: { devices: Device[]; header?: Re
                   {isUnlocked && (
                     <button
                       onClick={() => setResettingDevice(device)}
-                      className="inline-flex items-center gap-2 text-xs tracking-widest uppercase text-destructive hover:text-foreground transition-colors cursor-pointer"
+                      className="inline-flex items-center gap-2 text-xs tracking-widest uppercase text-destructive hover:text-foreground transition-colors"
                     >
                       Reset Passcode →
                     </button>
